@@ -24,9 +24,9 @@ class DesiredStateHandler:
     REFRESH_HZ = 10  # for main loop
 
     # All variables are a dictionary with mappings between the strings in DIRECTIONS to its corresponding value
-    pose = None   # Desired pose
-    twist = None  # Desired twist
-    power = None  # Desired power
+    pose = None  # Desired pose
+    twist = None # Desired twist
+    power = None # Desired power
     # These dictionaries contain mappings between the strings in DIRECTIONS to the corresponding rospy publisher objects
     pub_pos = {}
     pub_pos_enable = {}
@@ -81,10 +81,6 @@ class DesiredStateHandler:
         self.twist = None
         self.pose = None
         self.power = None
-
-    def disable_loops(self):
-        utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
-        utils.publish_data_constant(self.pub_vel_enable, utils.get_axes(), False)
 
     def disable_loops(self):
         utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
