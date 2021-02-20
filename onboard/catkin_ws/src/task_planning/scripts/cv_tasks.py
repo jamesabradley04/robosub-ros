@@ -113,7 +113,7 @@ class MoveOneCVBoxToAnotherTask(Task):
         # continue here:........... not done
 
         if (abs(x_diff) <= self.tolerance and abs(y_diff) <= self.tolerance and 
-            (abs(w_diff) < self.tolerance or abs(h_diff) < self.tolerance)
+            (abs(w_diff) < self.tolerance or abs(h_diff) < self.tolerance):
             if self.vel_task:
                 self.vel_task.finish()
             self.finish()
