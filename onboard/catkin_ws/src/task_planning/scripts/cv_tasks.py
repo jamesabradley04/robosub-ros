@@ -76,7 +76,7 @@ class MoveOneCVBoxToAnotherTask(Task):
     the center of the box will be aligned to x_target and y_target, and will match at least one of either w_target or h_target in dimension
     """
 
-    def __init__(self, cv_obstacle, x_target, y_target, w_target, h_t, method="strafe", camera="front", tolerance=0.1):
+    def __init__(self, cv_obstacle, x_target, y_target, w_target, h_target, method="strafe", camera="front", tolerance=0.1):
         super(MoveOneCVPointToAnotherTask, self).__init__()
 
         self.cv_obstacle = cv_obstacle
@@ -110,10 +110,25 @@ class MoveOneCVBoxToAnotherTask(Task):
         w_diff = self.w_target - w_curr
         h_diff = self.h_target - h_curr
 
+        target_area = self.w_target * self.h_target
+        current_area = w_curr * h_curr
+
         # continue here:........... not done
 
-        if (abs(x_diff) <= self.tolerance and abs(y_diff) <= self.tolerance and 
-            (abs(w_diff) < self.tolerance or abs(h_diff) < self.tolerance):
+        # determine if need to scale up or scale down box
+        resize_box = current_area - target_area # probably want to add tolerance and change if statements accordingly
+
+        if resize_box < 0: # current box smaller than target, so scale up
+            # move to position and then scale up
+                # check if position met (w or h is within tolerance)
+                # then execute scale up
+        elif resize_box > 0: # current box larger than target, so scale down
+            # scale down then move to position
+                # scale down and check if size requirement is met
+                # then execute movement to put (w or H within tolerance)
+
+        if (abs(x_diff) <= self.tolerance and abs(y_diff) <= self.tolerance and
+            (abs(w_diff) < self.tolerance or abs(h_diff) < self.tolerance)):
             if self.vel_task:
                 self.vel_task.finish()
             self.finish()
