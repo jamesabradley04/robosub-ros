@@ -16,14 +16,8 @@ class TestStatePublisher:
 
         self._pub_desired_pose = rospy.Publisher(self.PUBLISHING_TOPIC_DESIRED_POSE, Pose, queue_size=3)
         self._pub_desired_twist = rospy.Publisher(self.PUBLISHING_TOPIC_DESIRED_TWIST, Twist, queue_size=3)
-<<<<<<< HEAD
-<<<<<<< HEAD
         self._pub_desired_power = rospy.Publisher(self.PUBLISHING_TOPIC_DESIRED_POWER, Twist, queue_size=3)
-=======
->>>>>>> change desierd power to desired twist
-=======
         self._pub_desired_power = rospy.Publisher(self.PUBLISHING_TOPIC_DESIRED_POWER, Twist, queue_size=3)
->>>>>>> Add unstabilized power control
         self._pub_current_state = rospy.Publisher(self.PUBLISHING_TOPIC_CURRENT_STATE, Odometry, queue_size=3)
 
         # These values correspond to the desired pose of the robot
@@ -45,18 +39,7 @@ class TestStatePublisher:
         self.desired_twist.angular.x = 0
         self.desired_twist.angular.y = 0
         self.desired_twist.angular.z = 0
-<<<<<<< HEAD
 
-        # These values correspond to the desired twist for the robot
-        self.desired_power = Twist()
-        self.desired_power.linear.x = 1
-        self.desired_power.linear.y = 0
-        self.desired_power.linear.z = 0
-        self.desired_power.angular.x = 0
-        self.desired_power.angular.y = 0
-        self.desired_power.angular.z = 0
-=======
->>>>>>> change desierd power to desired twist
 
         # These values correspond to the desired twist for the robot
         self.desired_power = Twist()

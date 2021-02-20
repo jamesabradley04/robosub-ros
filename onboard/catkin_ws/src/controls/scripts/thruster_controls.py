@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from std_msgs.msg import Float64
-from geometry_msgs.msg import Vector3Stamped
+from std_msgs.msg import Float64, Float32MultiArray
 from custom_msgs.msg import ThrusterSpeeds
 import numpy as np
 from thruster_manager import ThrusterManager

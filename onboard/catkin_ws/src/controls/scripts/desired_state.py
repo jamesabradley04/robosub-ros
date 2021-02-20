@@ -52,10 +52,17 @@ class DesiredStateHandler:
 
     def _on_pose_received(self, pose):
         self.pose = utils.parse_pose(utils.transform_pose(self.listener, 'odom', 'base_link', pose))
+<<<<<<< HEAD
 
     def _on_twist_received(self, twist):
         self.twist = utils.parse_twist(utils.transform_twist(self.listener, 'odom', 'base_link', twist))
 
+=======
+
+    def _on_twist_received(self, twist):
+        self.twist = utils.parse_twist(utils.transform_twist(self.listener, 'odom', 'base_link', twist))
+
+>>>>>>> origin/controls-v2
     def _on_power_received(self, power):
         self.power = utils.parse_twist(power)
 
@@ -70,10 +77,6 @@ class DesiredStateHandler:
     def disable_loops(self):
         utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
         utils.publish_data_constant(self.pub_vel_enable, utils.get_axes(), False)
-        # Fix - figure out how to enforce that the code is publishing zeros
-        utils.publish_data_constant(self.pub_control_effort, utils.get_axes(), 0)
-        self.twist = None
-        self.pose = None
 
     def disable_loops(self):
         utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
