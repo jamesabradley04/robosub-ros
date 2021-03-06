@@ -1,7 +1,7 @@
 import rospy
 
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, Twist, Vector3
+from geometry_msgs.msg import Pose, Twist
 from custom_msgs.msg import CVObject
 
 
@@ -24,17 +24,15 @@ class TaskState:
             'gate': None,
             'gate_tick': None
         }
-        self.cv_gate_data_listener = rospy.Subscriber(self.CV_GATE_DATA_TOPIC, CVObject, self._on_receive_gate_data)
+        self.cv_gate_data_listener = rospy.Subscriber(
+            self.CV_GATE_DATA_TOPIC, CVObject, self._on_receive_gate_data, 'gate')
         self.cv_gate_tick_data_listener = rospy.Subscriber(self.CV_GATE_TICK_DATA_TOPIC, CVObject,
-                                                           self._on_receive_gate_tick_data)
+                                                           self._on_receive_gate_data, 'gate_tick')
 
     def _on_receive_state(self, state):
         """Receive the state, update initial_state if it is empty
         and the task is running"""
         self.state = state
 
-    def _on_receive_gate_data(self, gate_data):
-        self.cv_data['gate'] = gate_data
-
-    def _on_receive_gate_tick_data(self, gate_tick_data):
-        self.cv_data['gate_tick'] = gate_tick_data
+    def _on_receive_gate_data(self, gate_data, object_type):
+        self.cv_data[object_type] = gate_data

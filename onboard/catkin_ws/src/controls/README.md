@@ -9,7 +9,7 @@ Thruster information is read from `*.config` files, which are written in YAML. T
 
 Only the most recently updated Desired State Topic will be used in movement. Therefore any updates will override the current movement of the robot. Controls will warn you if more than one Desired State Topic is being published to at any given time to prevent such issues. If Controls stops receiving Desired State messages at a high enough rate (at the moment, 10 Hz), it will warn you and will output zero power for safety purposes.
 
-The controls algorithm will output all 0's unless it is enabled with a call to rosservice as detailed in the setup. Sending the disable call to the service acts as an emergency stop that cuts off all power to the thrusters.
+The controls algorithm will output all 0's unless it is enabled with a call to rosservice as detailed in the setup. Sending the disable call to the service acts as a software emergency stop that cuts off all power to the thrusters.
 
 
 ## Setup
@@ -49,7 +49,7 @@ rostopic echo /offboard_comms/ThrusterSpeeds
 
 ## Testing with Simulation
 
-To get the initialize the simulation, follow the instructions in the simulation directory.
+To initialize the simulation, follow the instructions in the simulation directory.
 
 Once the simulation is running, execute:
 
@@ -71,6 +71,7 @@ Desired State Topics:
     + A point and quaternion representing the robot's desired global xyz position and rpy orientation.
     + Type: geometry_msgs/Pose
 <<<<<<< HEAD
+<<<<<<< HEAD
   - ```controls/desired_power```
     +  A twist with values [-1,1] (TBD) corresponding to global linear and angular velocities.
     + Type: geometry_msgs/Twist
@@ -87,6 +88,17 @@ Desired State Topics:
     + A twist with values [-1,1] corresponding to relative control efforts. 1 is full speed in a positive direction, -1 is full speed in the negative direction.
     + This option offers velocity stabilization on all axes with 0 power input. It is mainly for use with joysticks.
 >>>>>>> d192c2e0b819070c44c6a122ff798d909cb3ecec
+=======
+
+  - ```controls/desired_twist```
+    + A twist with values corresponding to linear and angular velocities.
+    + These values are considered as global inputs. If local velocity input is desired, then call ```rosservice call /enable_local_control true```.
+    + Type: geometry_msgs/Twist
+
+  - ```controls/desired_power```
+    + A twist with values [-1,1] corresponding to relative linear and angular velocities. 1 is full speed in a positive direction, -1 is full speed in the negative direction.
+    + This option completely ignores all PID loops, and offers no stabilization. It is mainly for use with joysticks.
+>>>>>>> origin
     + Type: geometry_msgs/Twist
 
 Current State Topics:
@@ -101,7 +113,7 @@ Thruster speeds are published for the use of the simulation and Arduino.
 
   - ```/offboard/thruster_speeds```
     + An array of 8 8-bit integers [-128,127] describing the allocation of the thrusters sent to the Arduino
-    + Type: controls.msg/ThrusterSpeeds
+    + Type: custom_msgs.msg/ThrusterSpeeds
 
 
 ## How It Works
@@ -119,12 +131,15 @@ This package has the following launch files:
 * `controls.launch` is the entrypoint to the package. It takes in a `sim` argument to indicate whether we are publishing for the simulation or the Arduino. It includes the `pid.launch` file to launch the PID for position loops. It then starts the three nodes above.
 * `position_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for position control on x, y, z, roll, pitch, and yaw. It defines the PID parameters at the top, depending on the `sim` argument passed in.
 <<<<<<< HEAD
+<<<<<<< HEAD
 * `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. It defines the PID parameters at the top, depending on the `sim` argument passed in.
 =======
 * `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. For ease of tuning via dynamic reconfiguration, this file accepts PID simulation constants as parameters which are used if the `sim` argument is asserted. 
 >>>>>>> d192c2e0b819070c44c6a122ff798d909cb3ecec
+=======
+>>>>>>> origin
 
-This package also defines a new custom message type, `ThrusterSpeeds`, which is the same type as in the package for controlling the Arduino.
+* `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. For ease of tuning via dynamic reconfiguration, this file accepts PID simulation constants as parameters which are used if the `sim` argument is asserted. 
 
 ### Flow
 
@@ -151,11 +166,7 @@ This package also defines a new custom message type, `ThrusterSpeeds`, which is 
 
 ### PID Flow
 
-<<<<<<< HEAD
-This package uses nested PID Loops. When using Position Control, the desired state input is used as the setpoint for the position loop and the output of the position loops is used as a setpoint for the velocity loops. When using Velocity Control, the position loop is bypassed and the desired state input is used as a setpoint for the velocity loops. When using Power Control both of the PID loops are bypassed and the input is directly published to thruster_controls.
-=======
 This package uses nested PID Loops. When using Position Control, the desired state input is used as the setpoint for the position loop and the output of the position loops is used as a setpoint for the velocity loops. When using Velocity Control, the position loop is bypassed and the desired state input is used as a setpoint for the velocity loops. When using Power Control both of the PID loops are bypassed and the input is directly published to thruster_controls. 
->>>>>>> d192c2e0b819070c44c6a122ff798d909cb3ecec
 ```
 
                       Velocity Control
@@ -181,12 +192,8 @@ A thruster's starting orientation when aligned with robot frame is defined as th
 ### Scripts
 
 * `state_republisher.py` - listens to Current State Topics and republishes relevant components to their own `/controls/state/...` topics for use in all of the other parts of this controls package.
-* `desired_state.py` - listens to Desired State Topics, warns the user via the console if none or more than one are received, and outputs setpoints to PID loops if desiring position or velocirty, or outputs powers directly to `thruster_controls`.
+* `desired_state.py` - listens to Desired State Topics, warns the user via the console if none or more than one are received, and outputs setpoints to PID loops if desiring position or velocity, or outputs powers directly to `thruster_controls`.
 * `thruster_controls.py` - listens to control efforts from PID or `desired_state`, uses an instance of `ThrusterManager` to calculate thruster allocations from the them, scales outputs so that the maximum is 1 or -1 in any direction, and publishes to Arduino or simulation movement topics.
 * `thruster_manager.py` - Defines the `ThrusterManager` class, which reads in config file, creates `Thruster` array from it, and has math for calculating thruster allocations.
 * `thruster.py` - Defines the `Thruster` class, which takes in a position and orientation of a thruster relative to the center of the robot, and then calculates and stores the force and torque it exerts on the robot.
-<<<<<<< HEAD
 * `controls_utils.py` - A library of mathematical and helper functions for controls.
-=======
-* `controls_utils.py` - A library of mathematical and helper functions for controls.
->>>>>>> origin/controls-v2
