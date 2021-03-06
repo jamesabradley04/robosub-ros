@@ -4,6 +4,7 @@ from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler
 import task_utils
 import rospy
+from log_task import LogTask
 
 
 class MoveToPoseGlobalTask(Task):
@@ -22,6 +23,7 @@ class MoveToPoseGlobalTask(Task):
             self.state.pose.pose, self.desired_pose, self.state.twist.twist)
         if at_desired_pose_vel:
             self.finish()
+            LogTask("INFO", "move task complete").run()
 
 
 class MoveToPoseLocalTask(MoveToPoseGlobalTask):
