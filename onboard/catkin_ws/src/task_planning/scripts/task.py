@@ -40,7 +40,7 @@ class Task(smach.State):
 
     def execute(self, userdata):
         self.initial_state = self.state
-        self.run(userdata)
+        return self.run(userdata)
 
     def publish_desired_pose_global(self, pose):
         self.task_state.desired_pose_global_publisher.publish(pose)
