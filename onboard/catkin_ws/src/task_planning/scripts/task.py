@@ -31,16 +31,16 @@ class Task(smach.State):
     def cv_data(self):
         return self.task_state.cv_data
 
-    def execute(self, userdata):
-        self.initial_state = self.state
-        run()
-
     @abstractmethod
-    def run(self):
+    def run(self, userdata):
         """Try to complete the task
 
         Override this method for a particular task."""
         pass
+
+    def execute(self, userdata):
+        self.initial_state = self.state
+        self.run(userdata)
 
     def publish_desired_pose_global(self, pose):
         self.task_state.desired_pose_global_publisher.publish(pose)
