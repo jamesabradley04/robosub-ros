@@ -1,32 +1,70 @@
+import smach.StateMachine
+from task import Task
+from move_tasks import MoveToPoseLocalTask, AllocateVelocityLocalTask
+
 SIDE_THRESHOLD = 0.1  # means gate post is within 1 tenth of the side of the frame
 CENTERED_THRESHOLD = 0.1  # means gate will be considered centered if within 1 tenth of the center of the frame
+
 
 def create_gate_task_sm(velocity=0.2):
     sm = smach.StateMachine(outcomes=['succeeded', 'failed'])
 
     with sm:
-        smach.StateMachine.add('NEARGATE', NearGateTask(SIDE_THRESHOLD),
-                                    transitions={'true':'MOVETHROUGHGATE', 'false':'HORIZONTALALIGNMENT'})
-        smach.StateMachine.add('MOVETHROUGHGATE', MoveToPoseLocalTask(3, 0, 0, 0, 0, 0),
-                                    transitions={'done':'succeeded'})
-        smach.StateMachine.add('HORIZONTALALIGNMENT', GateVerticalAlignmentTask(CENTERED_THRESHOLD),
-                                    transitions={'left':'ROTATELEFT', 'right':'ROTATERIGHT', 'center':'VERTICALALIGNMENT'})
-        smach.StateMachine.add('ROTATELEFT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, self.velocity),
-                                    transitions={'done':'HORIZONTALALIGNMENT'})
-        smach.StateMachine.add('ROTATERIGHT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, -self.velocity),
-                                    transitions={'done':'HORIZONTALALIGNMENT'})
-        smach.StateMachine.add('VERTICALALIGNMENT', GateVerticalAlignmentTask(CENTERED_THRESHOLD),
-                                    transitions={'top':'ASCEND', 'bottom':'DESCEND', 'center':'ADVANCE'})
-        smach.StateMachine.add('ASCEND', AllocateVelocityLocalTask(0, 0, self.velocity, 0, 0, 0),
-                                    transitions={'done':'VERTICALALIGNMENT'})
-        smach.StateMachine.add('DESCEND', AllocateVelocityLocalTask(0, 0, -self.velocity, 0, 0, 0),
-                                    transitions={'done':'VERTICALALIGNMENT'})
-        smach.StateMachine.add('ADVANCE', AllocateVelocityLocalTask(self.velocity, 0, 0, 0, 0, 0),
-                                    transitions={'done':'NEARGATE'})
+        smach.StateMachine.add('NEAR_GATE', NearGateTask(SIDE_THRESHOLD),
+                               transitions={
+                                   'true': 'MOVE_THROUGH_GATE',
+                                   'false': 'HORIZONTAL_ALIGNMENT',
+                                   'spin': 'NEAR_GATE'
+                               })
+        smach.StateMachine.add('MOVE_THROUGH_GATE', MoveToPoseLocalTask(3, 0, 0, 0, 0, 0),
+                               transitions={'done': 'succeeded', 'spin': 'MOVE_THROUGH_GATE'})
+        smach.StateMachine.add('HORIZONTAL_ALIGNMENT', GateHorizontalAlignmentTask(CENTERED_THRESHOLD),
+                               transitions={
+                                   'left': 'ROTATE_LEFT',
+                                   'right': 'ROTATE_RIGHT',
+                                   'center': 'VERTICAL_ALIGNMENT'
+                               })
+        smach.StateMachine.add('ROTATE_LEFT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, velocity),
+                               transitions={'done': 'HORIZONTAL_ALIGNMENT'})
+        smach.StateMachine.add('ROTATE_RIGHT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, -velocity),
+                               transitions={'done': 'HORIZONTAL_ALIGNMENT'})
+        smach.StateMachine.add('VERTICAL_ALIGNMENT', GateVerticalAlignmentTask(CENTERED_THRESHOLD),
+                               transitions={'top': 'ASCEND', 'bottom': 'DESCEND', 'center': 'ADVANCE'})
+        smach.StateMachine.add('ASCEND', AllocateVelocityLocalTask(0, 0, velocity, 0, 0, 0),
+                               transitions={'done': 'VERTICAL_ALIGNMENT'})
+        smach.StateMachine.add('DESCEND', AllocateVelocityLocalTask(0, 0, -velocity, 0, 0, 0),
+                               transitions={'done': 'VERTICAL_ALIGNMENT'})
+        smach.StateMachine.add('ADVANCE', AllocateVelocityLocalTask(velocity, 0, 0, 0, 0, 0),
+                               transitions={'done': 'NEAR_GATE'})
 
     return sm
 
-def scrutinize_gate(self, gate_data, gate_tick_data):
+
+class GateHorizontalAlignmentTask(Task):
+    def __init__(self, threshold):
+        super(GateHorizontalAlignmentTask, self).__init__()
+        self.threshold = threshold
+
+    def run(self):
+        pass
+
+
+class NearGateTask(Task):
+    def __init__(self, threshold):
+        super(NearGateTask, self).__init__()
+        self.threshold = threshold
+
+    def run(self):
+        gate_info = _scrutinize_gate(self.cv_data['gate'], self.cv_data['gate_tick'])
+        if gate_info:
+            if (gate_info["left"] > self.threshold) and (gate_info["right"] > self.threshold):
+                return "true"
+            else:
+                return "false"
+        return "spin"
+
+
+def _scrutinize_gate(gate_data, gate_tick_data):
     """Finds the distance from the gate to each of the four edges of the frame
     Parameters:
     gate_data (custom_msgs/CVObject): cv data for the gate
