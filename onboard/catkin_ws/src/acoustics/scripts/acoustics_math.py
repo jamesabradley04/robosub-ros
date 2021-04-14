@@ -39,7 +39,7 @@ def correct_phase(arr):
 def moving_average_max(a, pingc, fft_w_size, n=None):
     if n is None:
         n = int(pingc / fft_w_size)
-    weights = np.repeat(1.0, n) / n
+    weights = np.repeat(1.0, n)
     return np.argmax(np.convolve(a, weights, 'valid'))
 
 
@@ -50,10 +50,11 @@ def fft_sw(xn, freq, fs):
 
 
 def fft(xn, freq, w_size, fs):
-    ft = []
-    for i in range(int(len(xn) / w_size)):
-        xn_s = xn[i * w_size:(i + 1) * w_size]
-        ft.append(fft_sw(xn_s, freq, fs))
+    ft = np.fromiter((fft_sw(xn[i * w_size:(i + 1) * w_size], freq, fs) for i in range(int(len(xn) / w_size))), float)
+
+    # for i in range(int(len(xn) / w_size)):
+    #     xn_s = xn[i * w_size:(i + 1) * w_size]
+    #     ft.append(fft_sw(xn_s, freq, fs))
     return np.angle(ft), np.absolute(ft)
 
 
