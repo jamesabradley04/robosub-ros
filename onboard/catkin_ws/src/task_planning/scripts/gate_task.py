@@ -7,33 +7,46 @@ CENTERED_THRESHOLD = 0.1  # means gate will be considered centered if within 1 t
 
 
 def create_gate_task_sm(velocity=0.2):
-    sm = smach.StateMachine(outcomes=['succeeded', 'failed'])
+    sm = smach.StateMachine(outcomes=['gate_task_succeeded', 'gate_task_failed'])
 
     with sm:
         smach.StateMachine.add('NEAR_GATE', NearGateTask(SIDE_THRESHOLD),
                                transitions={
                                    'true': 'MOVE_THROUGH_GATE',
                                    'false': 'HORIZONTAL_ALIGNMENT',
-                                   'spin': 'NEAR_GATE'
-                               })
+                                   'spin': 'NEAR_GATE'})
+
         smach.StateMachine.add('MOVE_THROUGH_GATE', MoveToPoseLocalTask(3, 0, 0, 0, 0, 0),
-                               transitions={'done': 'succeeded', 'spin': 'MOVE_THROUGH_GATE'})
+                               transitions={
+                                   'done': 'succeeded',
+                                   'spin': 'MOVE_THROUGH_GATE'})
+
         smach.StateMachine.add('HORIZONTAL_ALIGNMENT', GateHorizontalAlignmentTask(CENTERED_THRESHOLD),
                                transitions={
                                    'left': 'ROTATE_LEFT',
                                    'right': 'ROTATE_RIGHT',
-                                   'center': 'VERTICAL_ALIGNMENT'
-                               })
+                                   'center': 'VERTICAL_ALIGNMENT',
+                                   'spin': 'HORIZONTAL_ALIGNMENT'})
+
         smach.StateMachine.add('ROTATE_LEFT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, velocity),
                                transitions={'done': 'HORIZONTAL_ALIGNMENT'})
+
         smach.StateMachine.add('ROTATE_RIGHT', AllocateVelocityLocalTask(0, 0, 0, 0, 0, -velocity),
                                transitions={'done': 'HORIZONTAL_ALIGNMENT'})
+
         smach.StateMachine.add('VERTICAL_ALIGNMENT', GateVerticalAlignmentTask(CENTERED_THRESHOLD),
-                               transitions={'top': 'ASCEND', 'bottom': 'DESCEND', 'center': 'ADVANCE'})
+                               transitions={
+                                   'top': 'ASCEND',
+                                   'bottom': 'DESCEND',
+                                   'center': 'ADVANCE',
+                                   'spin': 'VERTICAL_ALIGNMENT'})
+
         smach.StateMachine.add('ASCEND', AllocateVelocityLocalTask(0, 0, velocity, 0, 0, 0),
                                transitions={'done': 'VERTICAL_ALIGNMENT'})
+
         smach.StateMachine.add('DESCEND', AllocateVelocityLocalTask(0, 0, -velocity, 0, 0, 0),
                                transitions={'done': 'VERTICAL_ALIGNMENT'})
+
         smach.StateMachine.add('ADVANCE', AllocateVelocityLocalTask(velocity, 0, 0, 0, 0, 0),
                                transitions={'done': 'NEAR_GATE'})
 
@@ -46,7 +59,30 @@ class GateHorizontalAlignmentTask(Task):
         self.threshold = threshold
 
     def run(self):
-        pass
+        gate_info = _scrutinize_gate(self.cv_data['gate'], self.cv_data['gate_tick'])
+        if gate_info:
+            if abs(gate_info["offset_h"]) < self.threshold:
+                return "center"
+            if gate_info["offset_h"] < 0:
+                return "right"
+            return "left"
+        return "spin"
+
+
+class GateVerticalAlignmentTask(Task):
+    def __init__(self, threshold):
+        super(GateVerticalAlignmentTask, self).__init__()
+        self.threshold = threshold
+
+    def run(self):
+        gate_info = _scrutinize_gate(self.cv_data['gate'], self.cv_data['gate_tick'])
+        if gate_info:
+            if abs(gate_info["offset_v"]) < self.threshold:
+                return "center"
+            if gate_info["offset_v"] < 0:
+                return "top"
+            return "bottom"
+        return "spin"
 
 
 class NearGateTask(Task):
@@ -79,11 +115,13 @@ def _scrutinize_gate(gate_data, gate_tick_data):
     """
     if gate_data.label == 'none':
         return None
-    res = {}
-    res["left"] = gate_data.xmin
-    res["right"] = 1 - gate_data.xmax
-    res["top"] = gate_data.ymin
-    res["bottom"] = 1 - gate_data.ymax
+
+    res = {
+        "left": gate_data.xmin,
+        "right": 1 - gate_data.xmaxg,
+        "top": gate_data.ymin,
+        "bottom": 1 - gate_data.ymax
+    }
 
     # Adjust the target area if the gate tick is detected
     if gate_tick_data.label != 'none' and gate_tick_data.score > 0.5:
