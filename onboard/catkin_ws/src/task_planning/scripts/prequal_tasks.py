@@ -9,11 +9,11 @@ class PreQualGlobalTask(Task):
     Task to complete prequalifying run by moving to global poses
     """
 
-    POSE1 = [0, 0, 0, 0, 0, 0]
-    POSE2 = [0, 0, 0, 0, 0, 0]
-    POSE3 = [0, 0, 0, 0, 0, 0]
-    POSE4 = [0, 0, 0, 0, 0, 0]
-    POSE5 = [0, 0, 0, 0, 0, 0]
+    POSE1 = [0, 0, -0.5, 0, 0, 0]
+    POSE2 = [2, 0, -0.5, 0, 0, 0]
+    POSE3 = [2, 2, -0.5, 0, 0, 0]
+    POSE4 = [0, 2, -0.5, 0, 0, 0]
+    POSE5 = [0, 0, -0.5, 0, 0, 0]
 
     def __init__(self):
         super(PreQualGlobalTask, self).__init__()

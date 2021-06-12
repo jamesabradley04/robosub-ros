@@ -70,6 +70,25 @@ Desired State Topics:
   - ```controls/desired_pose```
     + A point and quaternion representing the robot's desired global xyz position and rpy orientation.
     + Type: geometry_msgs/Pose
+<<<<<<< HEAD
+<<<<<<< HEAD
+  - ```controls/desired_power```
+    +  A twist with values [-1,1] (TBD) corresponding to global linear and angular velocities.
+    + Type: geometry_msgs/Twist
+
+  - ```controls/desired_twist```
+    + A twist with values [-1,1] corresponding to relative linear and angular velocities. 1 is full speed in a positive direction, -1 is full speed in the negative direction.
+    + This option completely ignores all PID loops, and offers no stabilization. It is mainly for use with joysticks.
+=======
+  - ```controls/desired_twist```
+    +  A twist with values [-1,1] corresponding to global linear and angular velocities.
+    + Type: geometry_msgs/Twist
+
+  - ```controls/desired_power```
+    + A twist with values [-1,1] corresponding to relative control efforts. 1 is full speed in a positive direction, -1 is full speed in the negative direction.
+    + This option offers velocity stabilization on all axes with 0 power input. It is mainly for use with joysticks.
+>>>>>>> d192c2e0b819070c44c6a122ff798d909cb3ecec
+=======
 
   - ```controls/desired_twist```
     + A twist with values corresponding to linear and angular velocities.
@@ -79,6 +98,7 @@ Desired State Topics:
   - ```controls/desired_power```
     + A twist with values [-1,1] corresponding to relative linear and angular velocities. 1 is full speed in a positive direction, -1 is full speed in the negative direction.
     + This option completely ignores all PID loops, and offers no stabilization. It is mainly for use with joysticks.
+>>>>>>> origin
     + Type: geometry_msgs/Twist
 
 Current State Topics:
@@ -110,6 +130,14 @@ This package has the following launch files:
 
 * `controls.launch` is the entrypoint to the package. It takes in a `sim` argument to indicate whether we are publishing for the simulation or the Arduino. It includes the `pid.launch` file to launch the PID for position loops. It then starts the three nodes above.
 * `position_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for position control on x, y, z, roll, pitch, and yaw. It defines the PID parameters at the top, depending on the `sim` argument passed in.
+<<<<<<< HEAD
+<<<<<<< HEAD
+* `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. It defines the PID parameters at the top, depending on the `sim` argument passed in.
+=======
+* `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. For ease of tuning via dynamic reconfiguration, this file accepts PID simulation constants as parameters which are used if the `sim` argument is asserted. 
+>>>>>>> d192c2e0b819070c44c6a122ff798d909cb3ecec
+=======
+>>>>>>> origin
 
 * `velocity_pid.launch` spins up six [ROS PID](http://wiki.ros.org/pid) nodes for velocity control on x, y, z, roll, pitch, and yaw. For ease of tuning via dynamic reconfiguration, this file accepts PID simulation constants as parameters which are used if the `sim` argument is asserted. 
 

@@ -24,18 +24,16 @@ Our codebase is powered by the [Robot Operating System](https://www.ros.org) (RO
 The following components make up our software stack:
 
 - Onboard:
-    * [Acoustics](onboard/catkin_ws/src/acoustics) - Handles the task of locating an underwater hydrophone pinger.
     * [AVT Camera](onboard/catkin_ws/src/avt_camera) - Drives our ethernet cameras and publishes a live video feed.
     * [Controls](onboard/catkin_ws/src/controls) - Determines thruster outputs given a current and desired state.
     * [Computer Vision](onboard/catkin_ws/src/cv) - Locates objects (goals/obstacles) via camera input and machine learning.
     * [Data Pub](onboard/catkin_ws/src/data_pub) - Collects and parses data from sensors and publishes it for use by other packages.
     * [Execute](onboard/catkin_ws/src/execute) - Houses launch files that simplify starting and stopping our stack.
+    * [Task Planning](onboard/catkin_ws/src/task_planning) - Plans the tasks and motion of the robot by synthesizing inputs.
     * [Offboard Comms](onboard/catkin_ws/src/offboard_comms) - Allows communication between ROS code and the onboard Arduino.
     * [RoboSub Description](onboard/catkin_ws/src/robosub_description) - Contains files to describe and display our robot.
     * [Sensor Fusion](onboard/catkin_ws/src/sensor_fusion) - Interprets sensor data and publishes an estimation of the current robot state.
     * [Static Transforms](onboard/catkin_ws/src/static_transforms) - Makes static transforms available for other packages.
-    * [System Utils](onboard/catkin_ws/src/system_utils) - Contains system helpers for evaluating performance and interacting with hardware.
-    * [Task Planning](onboard/catkin_ws/src/task_planning) - Plans the tasks and motion of the robot by synthesizing inputs.
 - Landside:
     * [Camera View](landside/catkin_ws/src/camera_view) - Package that allows for viewing, saving, and loading videos to simulate camera input.
     * [Joystick](landside/catkin_ws/src/joystick) - Allows manual joystick control for testing.
@@ -53,12 +51,12 @@ The general flow of information between components is shown in the diagram below
               v                                 /     v
             Data Pub                           /   Camera View
                 \                             /
- Simulation ---> \          Acoustics        /
-                  v             |            v
-                Sensor Fusion   |      Computer Vision
-                    \           |         /
-                     \          |        /
-                      v         v       v
+ Simulation ---> \                           /
+                  v                         v
+                Sensor Fusion          Computer Vision
+                    \                     /
+                     \                   /
+                      v                 v
                          Task Planning
                                |
                                |
@@ -114,6 +112,10 @@ Use these instructions when running code on the robot itself.
     ```bash
     ssh -XY -p 2201 root@localhost
     ```
+1. Inside landside, complete the connection between the two containers.
+    ```bash
+    source /opt/ros/melodic/setup_network.bash
+    ```
 1. Now go to [Running Our Code](#running-our-code).
 
 ### Local Testing
@@ -134,6 +136,10 @@ Use these instructions to test code on your computer by simulating the robot's e
 1. In a new tab, SSH into the landside container. Password is `robotics`.
     ```bash
     ssh -XY -p 2201 root@localhost
+    ```
+1. Inside landside, complete the connection between the two containers.
+    ```bash
+    source /opt/ros/melodic/setup_network.bash
     ```
 1. Now go to [Running Our Code](#running-our-code). Also set up our [simulation](landside/catkin_ws/src/simulation).
 1. To stop and delete both containers and their network, in the `robosub-ros` directory, execute

@@ -66,6 +66,7 @@ class TestStatePublisher:
         self.current_state.header.frame_id = 'odom'
         self.current_state.header.stamp = rospy.Time()
 
+
     def publish_desired_pose(self):
         rate = rospy.Rate(15)
         while not rospy.is_shutdown():
@@ -87,6 +88,12 @@ class TestStatePublisher:
             # self._pub_current_state.publish(self.current_state)
             rate.sleep()
 
+    def publish_desired_power(self):
+        rate = rospy.Rate(15)
+        while not rospy.is_shutdown():
+            self._pub_desired_power.publish(self.desired_power)
+            # self._pub_current_state.publish(self.current_state)
+            rate.sleep()
 
 def main():
     TestStatePublisher().publish_desired_pose()

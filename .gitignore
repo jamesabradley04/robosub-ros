@@ -13,10 +13,7 @@
 */catkin_ws/logs
 
 # ROS_Serial
-ros_lib/
-
-# Acoustics
-*.csv
+catkin_ws/src/offboard_comms/ros_lib
 
 # Video and Bags
 *.avi

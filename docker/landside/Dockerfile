@@ -3,8 +3,10 @@ FROM ${BASE_IMAGE}
 
 ### SSH Settings ###
 
-# Set ssh to use port 2201
-RUN echo "Port 2201" >> /etc/ssh/sshd_config
+# Set ssh to not use local X11 so graphics are forwarded to user
+RUN echo "X11UseLocalhost no" >> /etc/ssh/sshd_config && \
+    # Set ssh to use port 2201
+    echo "Port 2201" >> /etc/ssh/sshd_config
 
 ### Final Installs ###
 
@@ -33,4 +35,3 @@ RUN chmod +x /opt/ros/melodic/setup_network.bash
 
 # Set computer type
 ENV COMPUTER_TYPE=landside
-RUN echo "COMPUTER_TYPE=landside" >> /root/.ssh/environment

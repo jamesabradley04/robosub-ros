@@ -4,6 +4,7 @@ from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler
 import task_utils
 import rospy
+from log_task import LogTask
 
 
 class MoveToPoseGlobalTask(Task):
@@ -22,11 +23,11 @@ class MoveToPoseGlobalTask(Task):
             self.state.pose.pose, self.desired_pose, self.state.twist.twist)
         if at_desired_pose_vel:
             self.finish()
+            LogTask("INFO", "move task complete").run()
 
 
 class MoveToPoseLocalTask(MoveToPoseGlobalTask):
     """Move to pose given in local coordinates."""
-
     def __init__(self, x, y, z, roll, pitch, yaw):
         super(MoveToPoseLocalTask, self).__init__(x, y, z, roll, pitch, yaw)
 
@@ -82,6 +83,7 @@ class AllocateVelocityLocalTask(AllocateVelocityGlobalTask):
             yaw (float): yaw-component of angular velocity
         """
         super(AllocateVelocityLocalTask, self).__init__(x, y, z, roll, pitch, yaw)
+
         self.first_start = True
 
     def _on_task_start(self):
