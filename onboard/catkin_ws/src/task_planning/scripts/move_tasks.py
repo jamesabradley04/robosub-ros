@@ -4,7 +4,6 @@ from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler
 import task_utils
 import rospy
-from log_task import LogTask
 
 
 class MoveToPoseGlobalTask(Task):
@@ -17,21 +16,20 @@ class MoveToPoseGlobalTask(Task):
         self.desired_pose.position = Point(x=x, y=y, z=z)
         self.desired_pose.orientation = Quaternion(*quaternion_from_euler(roll, pitch, yaw))
 
-    def _on_task_run(self):
+    def run(self):
         self.publish_desired_pose_global(self.desired_pose)
         at_desired_pose_vel = task_utils.stopped_at_pose(
             self.state.pose.pose, self.desired_pose, self.state.twist.twist)
         if at_desired_pose_vel:
-            self.finish()
-            LogTask("INFO", "move task complete").run()
+            return "done"
+        return "spin"
 
 
 class MoveToPoseLocalTask(MoveToPoseGlobalTask):
     """Move to pose given in local coordinates."""
+
     def __init__(self, x, y, z, roll, pitch, yaw):
         super(MoveToPoseLocalTask, self).__init__(x, y, z, roll, pitch, yaw)
-
-    def _on_task_start(self):
         self.desired_pose = task_utils.transform('base_link', 'odom', self.desired_pose)
 
 
@@ -64,9 +62,10 @@ class AllocateVelocityGlobalTask(Task):
         angular = Vector3(x=roll, y=pitch, z=yaw)
         self.desired_twist = Twist(linear=linear, angular=angular)
 
-    def _on_task_run(self):
+    def run(self):
         rospy.loginfo("publishing desired twist...")
         self.publish_desired_twist(self.desired_twist)
+        return "done"
 
 
 class AllocateVelocityLocalTask(AllocateVelocityGlobalTask):
@@ -83,16 +82,11 @@ class AllocateVelocityLocalTask(AllocateVelocityGlobalTask):
             yaw (float): yaw-component of angular velocity
         """
         super(AllocateVelocityLocalTask, self).__init__(x, y, z, roll, pitch, yaw)
-
-        self.first_start = True
-
-    def _on_task_start(self):
-        if self.first_start:
-            odom_local = Odometry()
-            odom_local.twist.twist = self.desired_twist
-            odom_global = task_utils.transform('base_link', 'odom', odom_local)
-            self.desired_twist = odom_global.twist.twist
-            self.first_start = False
+        # Removed self.first_start check...not sure what it's used for? - EJ 04/13/21
+        odom_local = Odometry()
+        odom_local.twist.twist = self.desired_twist
+        odom_global = task_utils.transform('base_link', 'odom', odom_local)
+        self.desired_twist = odom_global.twist.twist
 
 
 class HoldPositionTask(Task):
