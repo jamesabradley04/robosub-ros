@@ -9,11 +9,11 @@ class Log(smach.State) :
 
     def execute(self, userdata):
         #ff
-        rospy.loginfo(text)
+        rospy.loginfo(self.text)
         return 'outcome2' 
 
-cc = Concurrence(outcomes = ['outcomex, outcomey'],
-                 default_outcome = 'outcomex',
+cc = Concurrence(outcomes = ['outcomey, succeeded'],
+                 default_outcome = 'outcomey',
                  input_keys = ['sm_input'],
                  output_keys = ['sm_output'],
                  outcome_map = {'succeeded':{'Log1':'outcome2'}})
@@ -27,7 +27,7 @@ def main():
     sm_top = smach.StateMachine(outcomes=['outcome6'])
 
     with sm_top:
-        smach.StateMachine.add('CON', cc, transitions = {'succeeded':'CON'})
+        smach.StateMachine.add('CON', cc, transitions = {'succeeded':'CON', 'outcomey':'outcome6'})
 
     #smach.StateMachine.add('CON', sm_top, 
     #                        transitions = {'succeeded':'CON'})
