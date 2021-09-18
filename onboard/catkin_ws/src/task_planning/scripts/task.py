@@ -8,8 +8,6 @@ from abc import ABCMeta, abstractmethod
 class Task(smach.State):
     """High level task that represents some function"""
 
-    __metaclass__ = ABCMeta
-
     task_state_provider = providers.Singleton(TaskState)
 
     def __init__(self, outcomes):

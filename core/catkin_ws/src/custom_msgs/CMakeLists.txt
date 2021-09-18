@@ -10,9 +10,14 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   DVLRaw.msg
+  HydrophoneSet.msg
   ThrusterSpeeds.msg
   ServoAngle.msg
   CVObject.msg
+  Memory.msg
+  SystemUsage.msg
+  SimObject.msg
+  SimObjectArray.msg
 )
 
 add_service_files(

@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import rospy
 import smach.StateMachine
 from gate_task import create_gate_task_sm
