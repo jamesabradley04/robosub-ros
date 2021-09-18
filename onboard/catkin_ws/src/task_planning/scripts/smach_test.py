@@ -16,8 +16,8 @@ def main():
     # Open the container
     with sm:
         # Add states to the container
-        smach.StateMachine.add('Move', MoveToPoseGlobalTask(), 
-                               transitions={'spin':'Move', 
+        smach.StateMachine.add('Move', MoveToPoseGlobalTask(2, 0, 0, 0, 0, 0), 
+                               transitions={'spin':'Move',
                                             'done':'finish'})
 
     # Execute SMACH plan

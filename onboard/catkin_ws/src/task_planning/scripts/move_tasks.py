@@ -10,14 +10,16 @@ class MoveToPoseGlobalTask(Task):
     """Move to pose given in global coordinates."""
 
     def __init__(self, x, y, z, roll, pitch, yaw):
-        super(MoveToPoseGlobalTask, self).__init__()
+        super(MoveToPoseGlobalTask, self).__init__(outcomes=['spin','done'])
 
         self.desired_pose = Pose()
         self.desired_pose.position = Point(x=x, y=y, z=z)
         self.desired_pose.orientation = Quaternion(*quaternion_from_euler(roll, pitch, yaw))
 
-    def run(self):
+    def run(self, userdata):
         self.publish_desired_pose_global(self.desired_pose)
+        if not self.state:
+            return "spin"
         at_desired_pose_vel = task_utils.stopped_at_pose(
             self.state.pose.pose, self.desired_pose, self.state.twist.twist)
         if at_desired_pose_vel:
