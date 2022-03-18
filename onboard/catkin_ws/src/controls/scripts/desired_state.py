@@ -83,11 +83,10 @@ class DesiredStateHandler:
         utils.publish_data_constant(self.pub_pos_enable, True)
         utils.publish_data_constant(self.pub_vel_enable, True)
 
-    def enable_position_mode(self, modes):
+    def set_position_modes(self, modes):
         # Enable all PID Loops that are in position mode
         for axis, mode in modes.items():
             self.pub_pos_enable[axis].publish(mode)
-            self.pub_vel_enable[axis].publish(not mode)
 
     def disable_pos_loop(self):
         # Disable position loop
@@ -131,8 +130,11 @@ class DesiredStateHandler:
 
             if self.pose:
                 # Run both loops
-                self.enable_position_mode(self.position_mode)
+                self.set_position_modes(self.position_mode)
                 utils.publish_data_dictionary(self.pub_pos, self.pose)
+                for axis, mode in self.position_mode.items():
+                    if not mode:
+                        self.pub_vel[axis].publish(self.twist[axis])
                 self.pose = None
 
             elif self.twist:
