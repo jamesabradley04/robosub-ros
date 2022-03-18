@@ -69,19 +69,19 @@ class DesiredStateHandler:
     def soft_estop(self):
         # Stop Moving
         self.disable_loops()
-        utils.publish_data_constant(self.pub_control_effort, utils.get_axes(), 0)
+        utils.publish_data_constant(self.pub_control_effort, 0)
         self.twist = None
         self.pose = None
         self.power = None
 
     def disable_loops(self):
-        utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
-        utils.publish_data_constant(self.pub_vel_enable, utils.get_axes(), False)
+        utils.publish_data_constant(self.pub_pos_enable, False)
+        utils.publish_data_constant(self.pub_vel_enable, False)
 
     def enable_loops(self):
         # Enable all PID Loops
-        utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), True)
-        utils.publish_data_constant(self.pub_vel_enable, utils.get_axes(), True)
+        utils.publish_data_constant(self.pub_pos_enable, True)
+        utils.publish_data_constant(self.pub_vel_enable, True)
 
     def enable_position_mode(self, modes):
         # Enable all PID Loops that are in position mode
@@ -91,7 +91,7 @@ class DesiredStateHandler:
 
     def disable_pos_loop(self):
         # Disable position loop
-        utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
+        utils.publish_data_constant(self.pub_pos_enable, False)
 
     def run(self):
         rate = rospy.Rate(self.REFRESH_HZ)
@@ -132,14 +132,14 @@ class DesiredStateHandler:
             if self.pose:
                 # Run both loops
                 self.enable_position_mode(self.position_mode)
-                utils.publish_data_dictionary(self.pub_pos, utils.get_axes(), self.pose)
+                utils.publish_data_dictionary(self.pub_pos, self.pose)
                 self.pose = None
 
             elif self.twist:
                 # Just run velocity loop
                 self.enable_loops()
                 self.disable_pos_loop()
-                utils.publish_data_dictionary(self.pub_vel, utils.get_axes(), self.twist)
+                utils.publish_data_dictionary(self.pub_vel, self.twist)
                 self.twist = None
 
             elif self.power:
@@ -147,10 +147,10 @@ class DesiredStateHandler:
                 # Enable stabilization on all axes with 0 power input
                 for p in self.power.keys():
                     if self.power[p] == 0:
-                        utils.publish_data_constant(self.pub_vel_enable, [p], True)
+                        utils.publish_data_constant(self.pub_vel_enable, True)
                 # Publish velocity setpoints to all Velocity loops, even though some are not enabled
-                utils.publish_data_dictionary(self.pub_vel, utils.get_axes(), self.power)
-                utils.publish_data_dictionary(self.pub_power, utils.get_axes(), self.power)
+                utils.publish_data_dictionary(self.pub_vel, self.power)
+                utils.publish_data_dictionary(self.pub_power, self.power)
                 self.power = None
 
 

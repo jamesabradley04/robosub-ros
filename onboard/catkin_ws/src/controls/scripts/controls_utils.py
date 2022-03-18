@@ -97,11 +97,11 @@ def transform_twist(listener, base_frame, target_frame, twist):
     return twist_tf
 
 
-def publish_data_dictionary(publishers, indexes, vals):
-    for d in indexes:
-        publishers[d].publish(vals[d])
+def publish_data_dictionary(publishers, vals):
+    for publisher, index in publishers.items():
+        publisher.publish(vals[index])
 
 
-def publish_data_constant(publishers, indexes, val):
-    for d in indexes:
-        publishers[d].publish(val)
+def publish_data_constant(publishers, val):
+    for publisher in publishers.values():
+        publisher.publish(val)
