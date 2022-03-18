@@ -21,6 +21,8 @@ def get_vel_topic(axis):
 def get_pid_topic(axis):
     return 'controls/' + axis + '_pos/setpoint'
 
+def get_position_mode_topic(axis):
+    return 'controls/position_mode/' + axis
 
 def get_pos_pid_enable(axis):
     return 'controls/enable/' + axis + '_pos'

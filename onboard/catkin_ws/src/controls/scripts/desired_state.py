@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from turtle import position
 import rospy
 from geometry_msgs.msg import Pose, Twist
 from std_msgs.msg import Float64, Bool
@@ -26,6 +27,7 @@ class DesiredStateHandler:
     pose = None  # Desired pose
     twist = None  # Desired twist
     power = None  # Desired power
+    position_mode = {} # Whether we are controlling position or velocity
     # These dictionaries contain mappings between the strings in DIRECTIONS to the corresponding rospy publisher objects
     pub_pos = {}
     pub_pos_enable = {}
@@ -44,6 +46,7 @@ class DesiredStateHandler:
             self.pub_vel[d] = rospy.Publisher(utils.get_vel_topic(d), Float64, queue_size=3)
             self.pub_control_effort[d] = rospy.Publisher(utils.get_controls_move_topic(d), Float64, queue_size=3)
             self.pub_power[d] = rospy.Publisher(utils.get_power_topic(d), Float64, queue_size=3)
+            rospy.Subscriber(utils.get_position_mode_topic(d), Bool, lambda val : self._on_position_mode_received(axis, val))
 
         self.listener = TransformListener()
 
@@ -59,6 +62,9 @@ class DesiredStateHandler:
 
     def _on_power_received(self, power):
         self.power = utils.parse_twist(power)
+
+    def _on_position_mode_received(self, axis, is_position):
+        self.position_mode[axis] = is_position
 
     def soft_estop(self):
         # Stop Moving
@@ -77,6 +83,12 @@ class DesiredStateHandler:
         utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), True)
         utils.publish_data_constant(self.pub_vel_enable, utils.get_axes(), True)
 
+    def enable_position_mode(self, modes):
+        # Enable all PID Loops that are in position mode
+        for axis, mode in modes.items():
+            self.pub_pos_enable[axis].publish(mode)
+            self.pub_vel_enable[axis].publish(not mode)
+
     def disable_pos_loop(self):
         # Disable position loop
         utils.publish_data_constant(self.pub_pos_enable, utils.get_axes(), False)
@@ -90,7 +102,7 @@ class DesiredStateHandler:
         while not rospy.is_shutdown():
             rate.sleep()
 
-            if (self.pose and self.twist) or (self.pose and self.power) or (self.twist and self.power):
+            if (self.pose and self.power) or (self.twist and self.power):
                 # More than one seen in one update cycle, so warn and continue
                 rospy.logerr("===> Controls received conflicting desired states! Halting robot. <===")
                 self.soft_estop()
@@ -102,8 +114,15 @@ class DesiredStateHandler:
                                                   "(Event %d) <===" % event_id) + bcolors.RESET)
                     warned = True
                 continue
+            elif self.power is None and ((any(self.position_mode) and self.pose is None) or (not all(self.position_mode) and self.twist is None)):
+                self.soft_estop()
+                if not warned:
+                    rospy.logwarn(bcolors.WARN + ("===> Controls received incomplete desired state! Halting robot. "
+                                                  "(Event %d) <===" % event_id) + bcolors.RESET)
+                    warned = True
+                continue
 
-            # Now we have either pose XOR powers
+            # Now we have either pose/twist XOR powers
             if warned:
                 rospy.loginfo(bcolors.OKGREEN + ("===> Controls now receiving desired state (End event %d) <===" %
                                                  (event_id)) + bcolors.RESET)
@@ -111,11 +130,13 @@ class DesiredStateHandler:
                 warned = False
 
             if self.pose:
-                self.enable_loops()
+                # Run both loops
+                self.enable_position_mode(self.position_mode)
                 utils.publish_data_dictionary(self.pub_pos, utils.get_axes(), self.pose)
                 self.pose = None
 
             elif self.twist:
+                # Just run velocity loop
                 self.enable_loops()
                 self.disable_pos_loop()
                 utils.publish_data_dictionary(self.pub_vel, utils.get_axes(), self.twist)
