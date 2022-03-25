@@ -7,7 +7,7 @@ import traceback
 
 from sensor_msgs.msg import Imu, MagneticField
 from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply 
-from geometry_msgs.msg import Quaternion
+from tf import Quaternion
 
 transformation_quat = Quaternion(0.7315563328, 0.6817809566, 0.000243224431, 0)
 transformation_quat_conj = Quaternion(0.7315563328, -0.6817809566, -0.000243224431, 0)
