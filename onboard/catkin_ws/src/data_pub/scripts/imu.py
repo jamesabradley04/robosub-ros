@@ -82,7 +82,7 @@ class IMURawPublisher:
         self._current_imu_msg.orientation.w = updated_quat_transformed[3]
 
     def _parse_accel(self, items):
-        original_accel_vector = (0, items[8], items[9], items[10])
+        original_accel_vector = (0, float(items[8]), float(items[9]), float(items[10]))
 
         q_1 = quaternion_multiply(transformation_quat, original_accel_vector)
         accel_vector_transformed = quaternion_multiply(q_1, transformation_quat_conj)
@@ -94,7 +94,7 @@ class IMURawPublisher:
     def _parse_angvel(self, items):
         items[13] = items[13][0:10]
 
-        original_angvel_vector = (0, items[11], items[12], items[13])
+        original_angvel_vector = (0, float(items[11]), float(items[12]), float(items[13]))
 
         q_1 = quaternion_multiply(transformation_quat, original_angvel_vector)
         angvel_vector_transformed = quaternion_multiply(q_1, transformation_quat_conj)
@@ -104,7 +104,7 @@ class IMURawPublisher:
         self._current_imu_msg.angular_velocity.z = float(angvel_vector_transformed[3])
 
     def _parse_mag(self, items):
-        original_mag_vector = (0, items[5], items[6], items[7])
+        original_mag_vector = (0, float(items[5]), float(items[6]), float(items[7]))
 
         q_1 = quaternion_multiply(transformation_quat, original_mag_vector)
         mag_vector_transformed = quaternion_multiply(q_1, transformation_quat_conj)
