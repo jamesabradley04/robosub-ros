@@ -6,7 +6,8 @@ import serial.tools.list_ports as list_ports
 import traceback
 
 from sensor_msgs.msg import Imu, MagneticField
-from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply, Quaternion 
+from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply 
+from geometry_msgs.msg import Quaternion
 
 transformation_quat = Quaternion(0.7315563328, 0.6817809566, 2.43224431 * 0.0001, 0)
 transformation_quat_conj = Quaternion(0.7315563328, -0.6817809566, -2.43224431 * 0.0001, 0)
