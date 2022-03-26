@@ -96,7 +96,7 @@ def transform_twist(listener, base_frame, target_frame, twist):
 
     return twist_tf
 
-
+#NOTE: This function will produce an error in state_republisher.py lines 33-37, which puts 3 arguments into this function
 def publish_data_dictionary(publishers, vals):
     for publisher, index in publishers.items():
         publisher.publish(vals[index])
