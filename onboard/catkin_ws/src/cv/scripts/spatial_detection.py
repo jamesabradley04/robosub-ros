@@ -89,55 +89,51 @@ class DepthAIDetector:
             xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=4, blocking=False)
             depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
 
-            while True:
-                inPreview = previewQueue.get()
-                inDet = detectionNNQueue.get()
-                depth = depthQueue.get()
+            inPreview = previewQueue.get()
+            inDet = detectionNNQueue.get()
+            depth = depthQueue.get()
 
-                frame = inPreview.getCvFrame()
-                depthFrame = depth.getFrame()  # depthFrame values are in millimeters
+            frame = inPreview.getCvFrame()
+            depthFrame = depth.getFrame()  # depthFrame values are in millimeters
 
-                depthFrameColor = cv2.normalize(depthFrame, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
-                depthFrameColor = cv2.equalizeHist(depthFrameColor)
-                depthFrameColor = cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_HOT)
+            depthFrameColor = cv2.normalize(depthFrame, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
+            depthFrameColor = cv2.equalizeHist(depthFrameColor)
+            depthFrameColor = cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_HOT)
 
-                detections = inDet.detections
+            detections = inDet.detections
 
-                # if len(detections) != 0:
-                #     boundingBoxMapping = xoutBoundingBoxDepthMappingQueue.get()
-                #     roiDatas = boundingBoxMapping.getConfigData()
-                #
-                #     for roiData in roiDatas:
-                #         roi = roiData.roi
-                #         roi = roi.denormalize(depthFrameColor.shape[1], depthFrameColor.shape[0])
-                #         topLeft = roi.topLeft()
-                #         bottomRight = roi.bottomRight()
-                #         xmin = int(topLeft.x)
-                #         ymin = int(topLeft.y)
-                #         xmax = int(bottomRight.x)
-                #         ymax = int(bottomRight.y)
+            # if len(detections) != 0:
+            #     boundingBoxMapping = xoutBoundingBoxDepthMappingQueue.get()
+            #     roiDatas = boundingBoxMapping.getConfigData()
+            #
+            #     for roiData in roiDatas:
+            #         roi = roiData.roi
+            #         roi = roi.denormalize(depthFrameColor.shape[1], depthFrameColor.shape[0])
+            #         topLeft = roi.topLeft()
+            #         bottomRight = roi.bottomRight()
+            #         xmin = int(topLeft.x)
+            #         ymin = int(topLeft.y)
+            #         xmax = int(bottomRight.x)
+            #         ymax = int(bottomRight.y)
 
-                # If the frame is available, draw bounding boxes on it and show the frame
-                height = frame.shape[0]
-                width = frame.shape[1]
-                for detection in detections:
-                    # Denormalize bounding box
-                    x1 = int(detection.xmin * width)
-                    x2 = int(detection.xmax * width)
-                    y1 = int(detection.ymin * height)
-                    y2 = int(detection.ymax * height)
+            # If the frame is available, draw bounding boxes on it and show the frame
+            height = frame.shape[0]
+            width = frame.shape[1]
+            for detection in detections:
+                # Denormalize bounding box
+                x1 = int(detection.xmin * width)
+                x2 = int(detection.xmax * width)
+                y1 = int(detection.ymin * height)
+                y2 = int(detection.ymax * height)
 
-                    label = detection.label
+                label = detection.label
 
-                    confidence = detection.confidence
-                    x = detection.spatialCoordinates.x
-                    y = detection.spatialCoordinates.y
-                    z = detection.spatialCoordinates.z
+                confidence = detection.confidence
+                x = detection.spatialCoordinates.x
+                y = detection.spatialCoordinates.y
+                z = detection.spatialCoordinates.z
 
-                    print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
-
-                if cv2.waitKey(1) == ord('q'):
-                    break
+                print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
 
 
 if __name__ == '__main__':
