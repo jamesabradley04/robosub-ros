@@ -23,6 +23,7 @@ class DepthAISpatialDetector:
                                   use_protocol=False)) as f:
             self.models = yaml.safe_load(f)
 
+        self.camera = 'front'
         self.pipeline = self.get_pipeline(nnBlobPath)
         self.output_queues = {}
         self.connected = False
@@ -92,6 +93,26 @@ class DepthAISpatialDetector:
         spatialDetectionNetwork.passthroughDepth.link(xoutDepth.input)
 
         return pipeline
+
+    def init_model(self, model_name):
+        model = self.models[model_name]
+
+        if model.get('pipeline') is not None:
+            return
+
+        blob_path = rr.get_filename(f"package://cv/models/{model['weights']}",
+                                    use_protocol=False)
+        model_pipeline = self.get_pipeline(blob_path)
+
+        publisher_dict = {}
+        for model_class in model['classes']:
+            publisher_name = f"{model['topic']}/{self.camera}/{model_class}"
+            publisher_dict[model_class] = rospy.Publisher(publisher_name,
+                                                          CVObject,
+                                                          queue_size=10)
+
+        model['pipeline'] = model_pipeline
+        model['publisher'] = publisher_dict
 
     def get_output_queues(self, device):
         if self.connected:
