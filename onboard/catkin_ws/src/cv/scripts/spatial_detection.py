@@ -83,7 +83,6 @@ class DepthAISpatialDetector:
         return pipeline
 
     def connect_and_get_output_queues(self):
-        # Connect to device and start pipeline
         with dai.Device(self.pipeline) as device:
             self.output_queues["previewQueue"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
             self.output_queues["detectionNNQueue"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
@@ -98,28 +97,10 @@ class DepthAISpatialDetector:
         frame = inPreview.getCvFrame()
         detections = inDet.detections
 
-        # depthFrame = depth.getFrame()  # depthFrame values are in millimeters
-        # depthFrameColor = cv2.normalize(depthFrame, None, 255, 0, cv2.NORM_INF, cv2.CV_8UC1)
-        # depthFrameColor = cv2.equalizeHist(depthFrameColor)
-        # depthFrameColor = cv2.applyColorMap(depthFrameColor, cv2.COLORMAP_HOT)
-        # if len(detections) != 0:
-        #     boundingBoxMapping = xoutBoundingBoxDepthMappingQueue.get()
-        #     roiDatas = boundingBoxMapping.getConfigData()
-        #
-        #     for roiData in roiDatas:
-        #         roi = roiData.roi
-        #         roi = roi.denormalize(depthFrameColor.shape[1], depthFrameColor.shape[0])
-        #         topLeft = roi.topLeft()
-        #         bottomRight = roi.bottomRight()
-        #         xmin = int(topLeft.x)
-        #         ymin = int(topLeft.y)
-        #         xmax = int(bottomRight.x)
-        #         ymax = int(bottomRight.y)
-
-            # If the frame is available, draw bounding boxes on it and show the frame
         height = frame.shape[0]
         width = frame.shape[1]
         for detection in detections:
+
             # Denormalize bounding box
             x1 = int(detection.xmin * width)
             x2 = int(detection.xmax * width)
