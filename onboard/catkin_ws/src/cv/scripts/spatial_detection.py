@@ -89,15 +89,14 @@ class DepthAISpatialDetector:
 
         return pipeline
 
-    def connect_and_get_output_queues(self):
+    def get_output_queues(self, device):
         if self.connected:
             return
 
-        with dai.Device(self.pipeline) as device:
-            self.output_queues["rgb"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
-            self.output_queues["detections"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
-            self.output_queues["boundingBoxDepthMapping"] = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
-            self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
+        self.output_queues["rgb"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
+        self.output_queues["detections"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
+        self.output_queues["boundingBoxDepthMapping"] = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
+        self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
         self.connected = True
 
     def run_detection(self):
@@ -128,5 +127,7 @@ class DepthAISpatialDetector:
 
 
 if __name__ == '__main__':
-    depthai_detector = DepthAIDetector()
-    depthai_detector.run_detection()
+    with dai.Device(self.pipeline) as device:
+        depthai_detector = DepthAIDetector()
+        depthai_detector.get_output_queues(device)
+        depthai_detector.run_detection()
