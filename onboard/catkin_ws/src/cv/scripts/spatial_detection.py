@@ -84,15 +84,15 @@ class DepthAISpatialDetector:
 
     def connect_and_get_output_queues(self):
         with dai.Device(self.pipeline) as device:
-            self.output_queues["previewQueue"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
-            self.output_queues["detectionNNQueue"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
-            self.output_queues["xoutBoundingBoxDepthMappingQueue"] = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
-            self.output_queues["depthQueue"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
+            self.output_queues["rgb"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
+            self.output_queues["detections"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
+            self.output_queues["boundingBoxDepthMapping"] = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
+            self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
 
     def run_detection(self):
-        inPreview = self.output_queues["previewQueue"].get()
-        inDet = self.output_queues["detectionNNQueue"].get()
-        depth = self.output_queues["depthQueue"].get()
+        inPreview = self.output_queues["rgb"].get()
+        inDet = self.output_queues["detections"].get()
+        depth = self.output_queues["depth"].get()
 
         frame = inPreview.getCvFrame()
         detections = inDet.detections
