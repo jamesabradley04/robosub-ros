@@ -101,11 +101,7 @@ class DepthAISpatialDetector:
         width = frame.shape[1]
         for detection in detections:
 
-            # Denormalize bounding box
-            x1 = int(detection.xmin * width)
-            x2 = int(detection.xmax * width)
-            y1 = int(detection.ymin * height)
-            y2 = int(detection.ymax * height)
+            bbox = (detection.xmin, detection.ymin, detection.xmax, detection.ymax)
 
             label = detection.label
 
