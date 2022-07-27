@@ -13,22 +13,22 @@ class DepthAIDetector:
             import sys
             raise FileNotFoundError(f'Required file/s not found, please run "{sys.executable} install_requirements.py"')
 
-        syncNN = True
+        self.pipeline = self.get_pipeline(nnBlobPath)
 
-        # Create pipeline
-        self.pipeline = dai.Pipeline()
+    def get_pipeline(self, nnBlobPath, syncNN=True):
+        pipeline = dai.Pipeline()
 
         # Define sources and outputs
-        camRgb = self.pipeline.create(dai.node.ColorCamera)
-        spatialDetectionNetwork = self.pipeline.create(dai.node.YoloSpatialDetectionNetwork)
-        monoLeft = self.pipeline.create(dai.node.MonoCamera)
-        monoRight = self.pipeline.create(dai.node.MonoCamera)
-        stereo = self.pipeline.create(dai.node.StereoDepth)
+        camRgb = pipeline.create(dai.node.ColorCamera)
+        spatialDetectionNetwork = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
+        monoLeft = pipeline.create(dai.node.MonoCamera)
+        monoRight = pipeline.create(dai.node.MonoCamera)
+        stereo = pipeline.create(dai.node.StereoDepth)
 
-        xoutRgb = self.pipeline.create(dai.node.XLinkOut)
-        xoutNN = self.pipeline.create(dai.node.XLinkOut)
-        xoutBoundingBoxDepthMapping = self.pipeline.create(dai.node.XLinkOut)
-        xoutDepth = self.pipeline.create(dai.node.XLinkOut)
+        xoutRgb = pipeline.create(dai.node.XLinkOut)
+        xoutNN = pipeline.create(dai.node.XLinkOut)
+        xoutBoundingBoxDepthMapping = pipeline.create(dai.node.XLinkOut)
+        xoutDepth = pipeline.create(dai.node.XLinkOut)
 
         xoutRgb.setStreamName("rgb")
         xoutNN.setStreamName("detections")
@@ -78,6 +78,8 @@ class DepthAIDetector:
 
         stereo.depth.link(spatialDetectionNetwork.inputDepth)
         spatialDetectionNetwork.passthroughDepth.link(xoutDepth.input)
+
+        return pipeline
 
     def run_detection(self):
         # Connect to device and start pipeline
