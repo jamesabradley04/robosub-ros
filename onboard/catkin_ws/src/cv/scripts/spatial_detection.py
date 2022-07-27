@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import rospy
+import resource_retriever as rr
+
 from pathlib import Path
 import cv2
 import depthai as dai
