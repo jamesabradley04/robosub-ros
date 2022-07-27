@@ -17,6 +17,7 @@ class DepthAISpatialDetector:
 
         self.pipeline = self.get_pipeline(nnBlobPath)
         self.output_queues = {}
+        self.connected = False
 
     def get_pipeline(self, nnBlobPath, syncNN=True):
         pipeline = dai.Pipeline()
@@ -85,13 +86,20 @@ class DepthAISpatialDetector:
         return pipeline
 
     def connect_and_get_output_queues(self):
+        if self.connected:
+            return
+
         with dai.Device(self.pipeline) as device:
             self.output_queues["rgb"] = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
             self.output_queues["detections"] = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
             self.output_queues["boundingBoxDepthMapping"] = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
             self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
+        self.connected = True
 
     def run_detection(self):
+        if not self.connected:
+            return
+
         inPreview = self.output_queues["rgb"].get()
         inDet = self.output_queues["detections"].get()
         depth = self.output_queues["depth"].get()
