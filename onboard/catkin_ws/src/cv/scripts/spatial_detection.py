@@ -13,8 +13,7 @@ class DepthAISpatialDetector:
     def __init__(self, nnBlobPath=str((Path(__file__).parent / Path('tiny-yolo-v4_openvino_2021.2_6shave.blob')).resolve().absolute())):
 
         if not Path(nnBlobPath).exists():
-            import sys
-            raise FileNotFoundError(f'Required file/s not found, please run "{sys.executable} install_requirements.py"')
+            raise FileNotFoundError(f'Provided blob file does not exist: {nnBlobPath}')
 
         self.pipeline = self.get_pipeline(nnBlobPath)
         self.output_queues = {}
