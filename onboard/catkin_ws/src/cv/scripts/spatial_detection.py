@@ -6,7 +6,7 @@ import depthai as dai
 import numpy as np
 
 
-class DepthAIDetector:
+class DepthAISpatialDetector:
     def __init__(self, nnBlobPath=str((Path(__file__).parent / Path('tiny-yolo-v4_openvino_2021.2_6shave.blob')).resolve().absolute())):
 
         if not Path(nnBlobPath).exists():
