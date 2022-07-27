@@ -19,6 +19,10 @@ class DepthAISpatialDetector:
         if not Path(nnBlobPath).exists():
             raise FileNotFoundError(f'Provided blob file does not exist: {nnBlobPath}')
 
+        with open(rr.get_filename('package://cv/models/spatial_detection_models.yaml',
+                                  use_protocol=False)) as f:
+            self.models = yaml.safe_load(f)
+
         self.pipeline = self.get_pipeline(nnBlobPath)
         self.output_queues = {}
         self.connected = False
