@@ -8,6 +8,10 @@ import cv2
 import depthai as dai
 import numpy as np
 
+from custom_msgs.srv import EnableModel
+from custom_msgs.msg import CVObject
+from sensor_msgs.msg import Image
+
 
 class DepthAISpatialDetector:
     def __init__(self, nnBlobPath=str((Path(__file__).parent / Path('tiny-yolo-v4_openvino_2021.2_6shave.blob')).resolve().absolute())):
