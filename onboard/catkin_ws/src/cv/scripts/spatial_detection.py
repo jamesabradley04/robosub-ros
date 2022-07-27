@@ -86,10 +86,10 @@ class DepthAISpatialDetector:
         with dai.Device(self.pipeline) as device:
 
             # Output queues will be used to get the rgb frames and nn data from the outputs defined above
-            previewQueue = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
-            detectionNNQueue = device.getOutputQueue(name="detections", maxSize=4, blocking=False)
-            xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=4, blocking=False)
-            depthQueue = device.getOutputQueue(name="depth", maxSize=4, blocking=False)
+            previewQueue = device.getOutputQueue(name="rgb", maxSize=1, blocking=False)
+            detectionNNQueue = device.getOutputQueue(name="detections", maxSize=1, blocking=False)
+            xoutBoundingBoxDepthMappingQueue = device.getOutputQueue(name="boundingBoxDepthMapping", maxSize=1, blocking=False)
+            depthQueue = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
 
             inPreview = previewQueue.get()
             inDet = detectionNNQueue.get()
