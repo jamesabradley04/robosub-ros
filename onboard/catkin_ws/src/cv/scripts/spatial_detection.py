@@ -124,7 +124,7 @@ class DepthAISpatialDetector:
         self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
         self.connected = True
 
-    def run_detection(self):
+    def get_detection(self):
         if not self.connected:
             return
 
@@ -155,4 +155,4 @@ if __name__ == '__main__':
     with dai.Device(self.pipeline) as device:
         depthai_detector = DepthAIDetector()
         depthai_detector.get_output_queues(device)
-        depthai_detector.run_detection()
+        depthai_detector.get_detection()
