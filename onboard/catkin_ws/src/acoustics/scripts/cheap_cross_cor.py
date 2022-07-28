@@ -28,7 +28,12 @@ class AcousticGuess:
 
             coord = [np.argmax(cross) - len(filtered[0]) for cross in cross_corr]
 
-            octant = tuple(1 if i > 0 else -1 for i in coord)
+            # octant = tuple(1 if i > 0 else -1 for i in coord)
+            octant = []
+            octant[0] = 1 if coord[0] < 0 else -1
+            octant[1] = 1 if coord[1] < 0 else -1
+            octant[2] = 1 if coord[2] > 0 else -1
+
             if octant not in octants:
                 octants[octant] = 0
             octants[octant] += 1

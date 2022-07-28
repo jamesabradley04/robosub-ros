@@ -23,9 +23,9 @@ class AcousticProcessor:
         self.publish_counts = publish_counts
         self.if_plot = if_plot
         self.hp = [np.array([0, 0, 0]),
-                   np.array([0, -self.SPAC, 0]),
-                   np.array([-self.SPAC, 0, 0]),
-                   np.array([-self.SPAC, -self.SPAC, 0])]
+            np.array([0.0127, -0.003683, 0]),
+            np.array([-0.0127, -0.003683, 0]),
+            np.array([0, -0.017272, 0])]
         self.ccwha = []
         self.downva = []
         self.actual = []
