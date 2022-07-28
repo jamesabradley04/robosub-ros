@@ -24,9 +24,11 @@ class DepthAISpatialDetector:
             self.models = yaml.safe_load(f)
 
         self.camera = 'front'
-        self.pipeline = self.get_pipeline(nnBlobPath)
+        self.pipeline = None
+        self.publishers = None
         self.output_queues = {}
         self.connected = False
+        self.current_model_name = None
 
     def get_pipeline(self, nnBlobPath, syncNN=True):
         pipeline = dai.Pipeline()
@@ -95,10 +97,11 @@ class DepthAISpatialDetector:
         return pipeline
 
     def init_model(self, model_name):
-        model = self.models[model_name]
-
-        if model.get('pipeline') is not None:
+        if model_name == self.current_model_name:
             return
+        self.current_model_name = model_name
+
+        model = self.models[model_name]
 
         blob_path = rr.get_filename(f"package://cv/models/{model['weights']}",
                                     use_protocol=False)
@@ -106,13 +109,13 @@ class DepthAISpatialDetector:
 
         publisher_dict = {}
         for model_class in model['classes']:
-            publisher_name = f"{model['topic']}/{self.camera}/{model_class}"
+            publisher_name = f"cv/{self.camera}/{model_class}"
             publisher_dict[model_class] = rospy.Publisher(publisher_name,
                                                           CVObject,
                                                           queue_size=10)
 
-        model['pipeline'] = model_pipeline
-        model['publisher'] = publisher_dict
+        self.pipeline = model_pipeline
+        self.publishers = publisher_dict
 
     def get_output_queues(self, device):
         if self.connected:
@@ -149,10 +152,3 @@ class DepthAISpatialDetector:
             z = detection.spatialCoordinates.z
 
             print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
-
-
-if __name__ == '__main__':
-    with dai.Device(self.pipeline) as device:
-        depthai_detector = DepthAIDetector()
-        depthai_detector.get_output_queues(device)
-        depthai_detector.get_detection()
