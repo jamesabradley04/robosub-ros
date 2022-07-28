@@ -28,6 +28,8 @@ class DepthAISpatialDetector:
         self.connected = False
         self.current_model_name = None
 
+        self.enable_service = f'enable_model_{self.camera}'
+
     def get_pipeline(self, nnBlobPath, syncNN=True):
         pipeline = dai.Pipeline()
 
@@ -167,3 +169,26 @@ class DepthAISpatialDetector:
 
         if self.publishers:
             self.publishers[label].publish(object_msg)
+
+    def run_model(self, req):
+        if not req.model_name in self.models:
+            return False
+
+        self.init_model(req.model_name)
+        with dai.Device(self.pipeline) as device:
+            self.get_output_queues(device)
+
+            loop_rate = rospy.Rate(1)
+            while not rospy.is_shutdown():
+                self.detect()
+                loop_rate.sleep()
+
+        return True
+
+    def run(self):
+        rospy.Service(self.enable_service, EnableModel, self.run_model)
+        rospy.spin()
+
+
+if __name__ == '__main__':
+    DepthAISpatialDetector().run()
