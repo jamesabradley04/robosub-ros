@@ -123,7 +123,7 @@ class DepthAISpatialDetector:
         self.output_queues["depth"] = device.getOutputQueue(name="depth", maxSize=1, blocking=False)
         self.connected = True
 
-    def get_detection(self):
+    def detect(self):
         if not self.connected:
             return
 
