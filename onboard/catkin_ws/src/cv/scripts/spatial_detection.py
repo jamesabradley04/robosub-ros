@@ -104,6 +104,7 @@ class DepthAISpatialDetector:
                                     use_protocol=False)
         self.pipeline = self.get_pipeline(blob_path)
 
+        # For now, creating publisher for each class
         publisher_dict = {}
         for model_class in model['classes']:
             publisher_name = f"cv/{self.camera}/{model_class}"
@@ -146,4 +147,22 @@ class DepthAISpatialDetector:
             y = detection.spatialCoordinates.y
             z = detection.spatialCoordinates.z
 
-            print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
+            # print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
+            self.publish_prediction(bbox, z, label, confidence, (height, width))
+
+    def publish_prediction(self, bbox, depth, label, confidence, shape):
+        object_msg = CVObject()
+        object_msg.label = label
+        object_msg.score = confidence
+        object_msg.distance = depth
+
+        object_msg.xmin = bbox[0]
+        object_msg.ymin = bbox[1]
+        object_msg.xmax = bbox[2]
+        object_msg.ymax = bbox[3]
+
+        object_msg.height = shape[0]
+        object_msg.width = shape[1]
+
+        if self.publishers:
+            self.publishers[label].publish(object_msg)
