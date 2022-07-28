@@ -102,7 +102,7 @@ class DepthAISpatialDetector:
 
         blob_path = rr.get_filename(f"package://cv/models/{model['weights']}",
                                     use_protocol=False)
-        model_pipeline = self.get_pipeline(blob_path)
+        self.pipeline = self.get_pipeline(blob_path)
 
         publisher_dict = {}
         for model_class in model['classes']:
@@ -110,8 +110,6 @@ class DepthAISpatialDetector:
             publisher_dict[model_class] = rospy.Publisher(publisher_name,
                                                           CVObject,
                                                           queue_size=10)
-
-        self.pipeline = model_pipeline
         self.publishers = publisher_dict
 
     def get_output_queues(self, device):
