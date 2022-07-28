@@ -2,6 +2,7 @@
 
 import rospy
 import resource_retriever as rr
+import yaml
 
 from pathlib import Path
 import cv2
