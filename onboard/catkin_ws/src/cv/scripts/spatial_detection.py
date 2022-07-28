@@ -27,6 +27,7 @@ class DepthAISpatialDetector:
         self.output_queues = {}
         self.connected = False
         self.current_model_name = None
+        self.classes = None
 
         self.enable_service = f'enable_model_{self.camera}'
 
@@ -103,6 +104,8 @@ class DepthAISpatialDetector:
 
         model = self.models[model_name]
 
+        self.classes = model['classes']
+
         blob_path = rr.get_filename(f"package://cv/models/{model['weights']}",
                                     use_protocol=False)
         self.pipeline = self.get_pipeline(blob_path)
@@ -143,7 +146,8 @@ class DepthAISpatialDetector:
 
             bbox = (detection.xmin, detection.ymin, detection.xmax, detection.ymax)
 
-            label = detection.label
+            label_idx = detection.label
+            label = self.classes[label_idx]
 
             confidence = detection.confidence
             x = detection.spatialCoordinates.x
