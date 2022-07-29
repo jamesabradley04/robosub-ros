@@ -16,6 +16,7 @@ from sensor_msgs.msg import Image
 
 class DepthAISpatialDetector:
     def __init__(self):
+        rospy.init_node('cv', anonymous=True)
 
         with open(rr.get_filename('package://cv/models/spatial_detection_models.yaml',
                                   use_protocol=False)) as f:

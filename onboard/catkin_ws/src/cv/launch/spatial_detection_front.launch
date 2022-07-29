@@ -1,0 +1,3 @@
+<launch>
+        <node name="spatial_detection" pkg="cv" type="spatial_detection.py" />
+</launch>
