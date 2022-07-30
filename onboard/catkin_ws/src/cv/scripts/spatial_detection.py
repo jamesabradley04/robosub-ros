@@ -14,6 +14,8 @@ from custom_msgs.msg import CVObject
 from sensor_msgs.msg import Image
 
 
+MM_IN_METER = 1000
+
 class DepthAISpatialDetector:
     def __init__(self):
         rospy.init_node('cv', anonymous=True)
@@ -151,18 +153,24 @@ class DepthAISpatialDetector:
             label = self.classes[label_idx]
 
             confidence = detection.confidence
-            x = detection.spatialCoordinates.x
-            y = detection.spatialCoordinates.y
-            z = detection.spatialCoordinates.z
+            x_cam_mm = detection.spatialCoordinates.x  # x is left/right axis, where 0 is in middle of the frame, to the left is negative x, and to the right is positive x
+            y_cam_mm = detection.spatialCoordinates.y  # y is down/up axis, where 0 is in the middle of the frame, down is negative y, and up is positive y
+            z_cam_mm = detection.spatialCoordinates.z  # z is distance of object from camera in mm
 
-            # print(f'Label: {label}, Confidence: {confidence}, X: {x}, Y: {y}, Z: {z}')
-            self.publish_prediction(bbox, z, label, confidence, (height, width))
+            x_cam_meters, y_cam_meters, z_cam_meters = self.mm_to_meters(x_cam_mm), self.mm_to_meters(y_cam_mm), self.mm_to_meters(z_cam_mm)
 
-    def publish_prediction(self, bbox, depth, label, confidence, shape):
+            det_coords_robot_mm = self.camera_frame_to_robot_frame(x_cam_meters, y_cam_meters, z_cam_meters)
+
+            self.publish_prediction(bbox, det_coords_robot_mm, label, confidence, (height, width))
+
+    def publish_prediction(self, bbox, det_coords, label, confidence, shape):
         object_msg = CVObject()
         object_msg.label = label
         object_msg.score = confidence
-        object_msg.distance = depth
+
+        object_msg.x = det_coords[0]
+        object_msg.y = det_coords[1]
+        object_msg.z = det_coords[2]
 
         object_msg.xmin = bbox[0]
         object_msg.ymin = bbox[1]
@@ -174,6 +182,15 @@ class DepthAISpatialDetector:
 
         if self.publishers:
             self.publishers[label].publish(object_msg)
+
+    def camera_frame_to_robot_frame(self, cam_x, cam_y, cam_z):
+        robot_y = -cam_x
+        robot_z = cam_y
+        robot_x = cam_z
+        return robot_x, robot_y, robot_z
+
+    def mm_to_meters(self, val_mm):
+        return val_mm / MM_IN_METER
 
     def run_model(self, req):
         if not req.model_name in self.models:

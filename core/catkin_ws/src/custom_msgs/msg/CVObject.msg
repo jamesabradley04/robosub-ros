@@ -9,7 +9,9 @@ float64 ymax
 int32 height
 int32 width
 
-float64 distance
+float64 x  # Distance forward in meters
+float64 y  # Distance left in meters
+float64 z  # Distance up in meters
 
 string label
 float64 score
