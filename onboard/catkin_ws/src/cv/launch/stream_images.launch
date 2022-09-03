@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="cv" name="stream_images" type="stream_images.py" output="screen"/>
+</launch>
