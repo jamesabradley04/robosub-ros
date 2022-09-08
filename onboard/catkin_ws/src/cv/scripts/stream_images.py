@@ -9,8 +9,8 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
 
-# Stream images from camera to host
-class StreamPublisher:
+# Stream RGB image feed from DepthAI camera to host and publish these images
+class DepthAIImageStreamPublisher:
 
     CAMERA = 'front'
     STREAM_TOPIC = f'/camera/{CAMERA}/stream_raw'
