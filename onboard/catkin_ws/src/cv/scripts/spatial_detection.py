@@ -18,6 +18,9 @@ MM_IN_METER = 1000
 
 class DepthAISpatialDetector:
     def __init__(self):
+        """
+        Initializes the ROS node and service. Loads the yaml file at cv/models/spatial_detection_models.yaml
+        """
         rospy.init_node('cv', anonymous=True)
 
         with open(rr.get_filename('package://cv/models/spatial_detection_models.yaml',
@@ -35,6 +38,29 @@ class DepthAISpatialDetector:
         self.enable_service = f'enable_model_{self.camera}'
 
     def get_pipeline(self, nnBlobPath, syncNN=True):
+        """
+        Get the DepthAI Pipeline for 3D object localization. Inspiration taken from
+        https://docs.luxonis.com/projects/api/en/latest/samples/SpatialDetection/spatial_tiny_yolo/.
+        To understand the DepthAI pipeline structure, please see https://docs.luxonis.com/projects/api/en/latest/.
+        This pipeline computes the depth map using the two mono cameras. This depth map and the RGB feed are fed into
+        the YoloSpatialDetection Node, which detects objects and computes the average depth within the bounding box
+        for any detected object. The object detection model for this node is loaded from the nnBlobPath. For info
+        about the YoloSpatialDetection Node, see
+        https://docs.luxonis.com/projects/api/en/latest/components/nodes/yolo_spatial_detection_network/.
+        The output queues available from this pipeline are:
+            - "rgb": contains the 400x400 RGB preview of the camera feed.
+            - "detections": contains SpatialImgDetections messages (https://docs.luxonis.com/projects/api/en/latest/components/messages/spatial_img_detections/#spatialimgdetections),
+                            which includes bounding boxes for detections as well as XYZ coordinates of the detected objects.
+            - "boundingBoxDepthMapping": contains SpatialLocationCalculatorConfig messages, which provide a mapping
+                                         between the RGB feed from which bounding boxes are computed and the depth map.
+            - "depth": contains ImgFrame messages with UINT16 values which represent the depth in millimeters by default.
+                       see the depth output of https://docs.luxonis.com/projects/api/en/latest/components/nodes/stereo_depth/
+
+        :param nnBlobPath: Path to blob file used for object detection.
+        :param syncNN: If True, sync the RGB output feed with the detection from the neural network. Needed if the RGB
+        feed output will be used and needs to be synced with the object detections.
+        :return: depthai.Pipeline object to compute
+        """
         pipeline = dai.Pipeline()
 
         # Define sources and outputs
@@ -101,6 +127,20 @@ class DepthAISpatialDetector:
         return pipeline
 
     def init_model(self, model_name):
+        """
+        Creates and assigns the pipeline, sets the current model name, and creates the publishers.
+        A publisher is created for each class that the model predicts. The publishers are created in format: "cv/camera/model_name".
+        
+        :param model_name: Name of the model. The model name should match a key in cv/models/spatial_detection_models.yaml.
+        For example, if spatial_detection_models.yaml is
+
+        gate:
+            classes: [start_gate, start_tick]
+            topic: /cv
+            weights: gate-tick-15-epochs.pth
+
+        Then model name is "gate".
+        """
         if model_name == self.current_model_name:
             return
         self.current_model_name = model_name
@@ -113,7 +153,6 @@ class DepthAISpatialDetector:
                                     use_protocol=False)
         self.pipeline = self.get_pipeline(blob_path)
 
-        # For now, creating publisher for each class
         publisher_dict = {}
         for model_class in model['classes']:
             publisher_name = f"cv/{self.camera}/{model_class}"
@@ -123,6 +162,10 @@ class DepthAISpatialDetector:
         self.publishers = publisher_dict
 
     def get_output_queues(self, device):
+        """
+        Assigns output queues from the pipeline to dictionary of queues.
+        :param device: DepthAI.Device object for the connected device. See https://docs.luxonis.com/projects/api/en/latest/components/device/
+        """
         if self.connected:
             return
 
@@ -133,6 +176,9 @@ class DepthAISpatialDetector:
         self.connected = True
 
     def detect(self):
+        """
+        Get current detections from output queues and publish.
+        """
         if not self.connected:
             return
 
@@ -164,6 +210,15 @@ class DepthAISpatialDetector:
             self.publish_prediction(bbox, det_coords_robot_mm, label, confidence, (height, width))
 
     def publish_prediction(self, bbox, det_coords, label, confidence, shape):
+        """
+        Publish predictions to label-specific topic. Publishes to /cv/[camera]/[label].
+
+        :param bbox: Tuple for the bounding box. Values are from 0-1, where X increases left to right and Y increases.
+        :param det_coords: Tuple with the X, Y, and Z values in meters, and in the robot rotational reference frame.
+        :param label: Predicted label for the detection.
+        :param confidence: Confidence for the detection, from 0 to 1.
+        :param shape: Tuple with the (height, width) of the image.
+        """
         object_msg = CVObject()
         object_msg.label = label
         object_msg.score = confidence
@@ -184,15 +239,33 @@ class DepthAISpatialDetector:
             self.publishers[label].publish(object_msg)
 
     def camera_frame_to_robot_frame(self, cam_x, cam_y, cam_z):
+        """
+        Convert coordinates in camera reference frame to coordinates in robot reference frame.
+        This ONLY ACCOUNTS FOR THE ROTATION BETWEEN COORDINATE FRAMES, and DOES NOT ACCOUNT FOR THE TRANSLATION.
+        :param cam_x: X coordinate of object in camera reference frame.
+        :param cam_y: Y coordinate of object in camera reference frame.
+        :param cam_z: Z coordinate of object in camera reference frame.
+        :return: X,Y,Z coordinates of object in robot rotational reference frame.
+        """
         robot_y = -cam_x
         robot_z = cam_y
         robot_x = cam_z
         return robot_x, robot_y, robot_z
 
     def mm_to_meters(self, val_mm):
+        """
+        Converts value from millimeters to meters.
+        :param val_mm: Value in millimeters.
+        :return: Input value converted to meters.
+        """
         return val_mm / MM_IN_METER
 
     def run_model(self, req):
+        """
+        Runs the model on the connected device.
+        :param req: Request from
+        :return: False if the model is not in cv/models/spatial_detection_models.yaml. Otherwise, the model will be run on the device.
+        """
         if not req.model_name in self.models:
             return False
 
@@ -208,6 +281,15 @@ class DepthAISpatialDetector:
         return True
 
     def run(self):
+        """
+        Wait for the EnableModel rosservice call. If this call is made, the model specified will be run.
+        For information about EnableModel, see robosub-ros/core/catkin_ws/src/custom_msgs/srv/EnableModel.srv
+
+        Example ros commands to run this node and activate the model:
+            roslaunch cv spatial_detection_front.launch
+            rosservice call /enable_model_front gate True
+
+        """
         rospy.Service(self.enable_service, EnableModel, self.run_model)
         rospy.spin()
 
