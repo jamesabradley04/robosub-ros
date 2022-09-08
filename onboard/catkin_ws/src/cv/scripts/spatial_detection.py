@@ -210,9 +210,9 @@ class DepthAISpatialDetector:
             y_cam_mm = detection.spatialCoordinates.y  # y is down/up axis, where 0 is in the middle of the frame, down is negative y, and up is positive y
             z_cam_mm = detection.spatialCoordinates.z  # z is distance of object from camera in mm
 
-            x_cam_meters, y_cam_meters, z_cam_meters = self.mm_to_meters(x_cam_mm), self.mm_to_meters(y_cam_mm), self.mm_to_meters(z_cam_mm)
+            x_cam_meters, y_cam_meters, z_cam_meters = mm_to_meters(x_cam_mm), mm_to_meters(y_cam_mm), mm_to_meters(z_cam_mm)
 
-            det_coords_robot_mm = self.camera_frame_to_robot_frame(x_cam_meters, y_cam_meters, z_cam_meters)
+            det_coords_robot_mm = camera_frame_to_robot_frame(x_cam_meters, y_cam_meters, z_cam_meters)
 
             self.publish_prediction(bbox, det_coords_robot_mm, label, confidence, (height, width))
 
@@ -244,28 +244,6 @@ class DepthAISpatialDetector:
 
         if self.publishers:
             self.publishers[label].publish(object_msg)
-
-    def camera_frame_to_robot_frame(self, cam_x, cam_y, cam_z):
-        """
-        Convert coordinates in camera reference frame to coordinates in robot reference frame.
-        This ONLY ACCOUNTS FOR THE ROTATION BETWEEN COORDINATE FRAMES, and DOES NOT ACCOUNT FOR THE TRANSLATION.
-        :param cam_x: X coordinate of object in camera reference frame.
-        :param cam_y: Y coordinate of object in camera reference frame.
-        :param cam_z: Z coordinate of object in camera reference frame.
-        :return: X,Y,Z coordinates of object in robot rotational reference frame.
-        """
-        robot_y = -cam_x
-        robot_z = cam_y
-        robot_x = cam_z
-        return robot_x, robot_y, robot_z
-
-    def mm_to_meters(self, val_mm):
-        """
-        Converts value from millimeters to meters.
-        :param val_mm: Value in millimeters.
-        :return: Input value converted to meters.
-        """
-        return val_mm / MM_IN_METER
 
     def run_model(self, req):
         """
@@ -301,6 +279,29 @@ class DepthAISpatialDetector:
         """
         rospy.Service(self.enable_service, EnableModel, self.run_model)
         rospy.spin()
+
+
+def mm_to_meters(val_mm):
+    """
+    Converts value from millimeters to meters.
+    :param val_mm: Value in millimeters.
+    :return: Input value converted to meters.
+    """
+    return val_mm / MM_IN_METER
+
+def camera_frame_to_robot_frame(cam_x, cam_y, cam_z):
+    """
+    Convert coordinates in camera reference frame to coordinates in robot reference frame.
+    This ONLY ACCOUNTS FOR THE ROTATION BETWEEN COORDINATE FRAMES, and DOES NOT ACCOUNT FOR THE TRANSLATION.
+    :param cam_x: X coordinate of object in camera reference frame.
+    :param cam_y: Y coordinate of object in camera reference frame.
+    :param cam_z: Z coordinate of object in camera reference frame.
+    :return: X,Y,Z coordinates of object in robot rotational reference frame.
+    """
+    robot_y = -cam_x
+    robot_z = cam_y
+    robot_x = cam_z
+    return robot_x, robot_y, robot_z
 
 
 if __name__ == '__main__':
