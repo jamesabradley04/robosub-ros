@@ -5,8 +5,8 @@ import numpy as np
 import cv2
 import os
 
-# Mock the camera by publishing the same image to a topic
-class DummyStreamPublisher:
+# Test feeding local image into DepthAI camera as a still image feed
+class DepthAIMockImageStream:
 
     # Read in the dummy image and other misc. setup work
     def __init__(self):
