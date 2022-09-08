@@ -129,18 +129,17 @@ class DepthAISpatialDetector:
 
     def init_model(self, model_name):
         """
-        Creates and assigns the pipeline, sets the current model name, and creates the publishers.
-        A publisher is created for each class that the model predicts. The publishers are created in format: "cv/camera/model_name".
-        
+        Creates and assigns the pipeline and sets the current model name.
+
         :param model_name: Name of the model. The model name should match a key in cv/models/spatial_detection_models.yaml.
-        For example, if spatial_detection_models.yaml is
+        For example, if spatial_detection_models.yaml is:
 
         gate:
             classes: [start_gate, start_tick]
             topic: /cv
             weights: gate-tick-15-epochs.pth
 
-        Then model name is "gate".
+        Then model name is gate.
         """
         if model_name == self.current_model_name:
             return
@@ -154,6 +153,13 @@ class DepthAISpatialDetector:
                                     use_protocol=False)
         self.pipeline = self.build_pipeline(blob_path)
 
+    def init_publishers(self, model_name):
+        """
+        Initialize the publishers for the node. A publisher is created for each class that the model predicts.
+        The publishers are created in format: "cv/camera/model_name".
+        :param model_name: Name of the model that is being used.
+        """
+        model = self.models[model_name]
         publisher_dict = {}
         for model_class in model['classes']:
             publisher_name = f"cv/{self.camera}/{model_class}"
@@ -271,6 +277,8 @@ class DepthAISpatialDetector:
             return False
 
         self.init_model(req.model_name)
+        self.init_publishers(req.model_name)
+
         with dai.Device(self.pipeline) as device:
             self.get_output_queues(device)
 
