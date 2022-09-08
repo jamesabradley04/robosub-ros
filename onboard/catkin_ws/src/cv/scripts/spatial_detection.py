@@ -38,7 +38,7 @@ class DepthAISpatialDetector:
 
         self.enable_service = f'enable_model_{self.camera}'
 
-    def get_pipeline(self, nnBlobPath, syncNN=True):
+    def build_pipeline(self, nnBlobPath, syncNN=True):
         """
         Get the DepthAI Pipeline for 3D object localization. Inspiration taken from
         https://docs.luxonis.com/projects/api/en/latest/samples/SpatialDetection/spatial_tiny_yolo/.
@@ -152,7 +152,7 @@ class DepthAISpatialDetector:
 
         blob_path = rr.get_filename(f"package://cv/models/{model['weights']}",
                                     use_protocol=False)
-        self.pipeline = self.get_pipeline(blob_path)
+        self.pipeline = self.build_pipeline(blob_path)
 
         publisher_dict = {}
         for model_class in model['classes']:
