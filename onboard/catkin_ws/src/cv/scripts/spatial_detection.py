@@ -15,6 +15,7 @@ from sensor_msgs.msg import Image
 
 
 MM_IN_METER = 1000
+SPATIAL_DETECTION_MODELS_FILEPATH = 'package://cv/models/spatial_detection_models.yaml'
 
 class DepthAISpatialDetector:
     def __init__(self):
@@ -23,7 +24,7 @@ class DepthAISpatialDetector:
         """
         rospy.init_node('cv', anonymous=True)
 
-        with open(rr.get_filename('package://cv/models/spatial_detection_models.yaml',
+        with open(rr.get_filename(SPATIAL_DETECTION_MODELS_FILEPATH,
                                   use_protocol=False)) as f:
             self.models = yaml.safe_load(f)
 
