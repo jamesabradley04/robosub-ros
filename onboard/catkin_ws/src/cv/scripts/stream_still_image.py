@@ -9,8 +9,9 @@ from custom_msgs.srv import EnableModel
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-# Mock the camera by publishing the same image to a topic
-class DummyStreamPublisher:
+# Feed local image into DepthAI camera as a still image feed, and perform detection on the still image feed
+# THIS FILE IS INCOMPLETE
+class DepthAIMockImageStreamDetection:
 
     CAMERA = 'front'
     STREAM_TOPIC = f'/camera/{CAMERA}/stream_still_image'
