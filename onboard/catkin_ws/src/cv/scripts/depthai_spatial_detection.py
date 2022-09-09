@@ -39,7 +39,7 @@ class DepthAISpatialDetector:
 
         self.enable_service = f'enable_model_{self.camera}'
 
-    def build_pipeline(self, nnBlobPath, syncNN=True):
+    def build_pipeline(self, nn_blob_path, sync_nn=True):
         """
         Get the DepthAI Pipeline for 3D object localization. Inspiration taken from
         https://docs.luxonis.com/projects/api/en/latest/samples/SpatialDetection/spatial_tiny_yolo/.
@@ -58,73 +58,73 @@ class DepthAISpatialDetector:
             - "depth": contains ImgFrame messages with UINT16 values which represent the depth in millimeters by default.
                        see the depth output of https://docs.luxonis.com/projects/api/en/latest/components/nodes/stereo_depth/
 
-        :param nnBlobPath: Path to blob file used for object detection.
-        :param syncNN: If True, sync the RGB output feed with the detection from the neural network. Needed if the RGB
+        :param nn_blob_path: Path to blob file used for object detection.
+        :param sync_nn: If True, sync the RGB output feed with the detection from the neural network. Needed if the RGB
         feed output will be used and needs to be synced with the object detections.
         :return: depthai.Pipeline object to compute
         """
         pipeline = dai.Pipeline()
 
         # Define sources and outputs
-        camRgb = pipeline.create(dai.node.ColorCamera)
-        spatialDetectionNetwork = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
-        monoLeft = pipeline.create(dai.node.MonoCamera)
-        monoRight = pipeline.create(dai.node.MonoCamera)
+        cam_rgb = pipeline.create(dai.node.ColorCamera)
+        spatial_detection_network = pipeline.create(dai.node.YoloSpatialDetectionNetwork)
+        mono_left = pipeline.create(dai.node.MonoCamera)
+        mono_right = pipeline.create(dai.node.MonoCamera)
         stereo = pipeline.create(dai.node.StereoDepth)
 
-        xoutRgb = pipeline.create(dai.node.XLinkOut)
-        xoutNN = pipeline.create(dai.node.XLinkOut)
-        xoutBoundingBoxDepthMapping = pipeline.create(dai.node.XLinkOut)
-        xoutDepth = pipeline.create(dai.node.XLinkOut)
+        xout_rgb = pipeline.create(dai.node.XLinkOut)
+        xout_nn = pipeline.create(dai.node.XLinkOut)
+        xout_bounding_box_depth_mapping = pipeline.create(dai.node.XLinkOut)
+        xout_depth = pipeline.create(dai.node.XLinkOut)
 
-        xoutRgb.setStreamName("rgb")
-        xoutNN.setStreamName("detections")
-        xoutBoundingBoxDepthMapping.setStreamName("boundingBoxDepthMapping")
-        xoutDepth.setStreamName("depth")
+        xout_rgb.setStreamName("rgb")
+        xout_nn.setStreamName("detections")
+        xout_bounding_box_depth_mapping.setStreamName("boundingBoxDepthMapping")
+        xout_depth.setStreamName("depth")
 
         # Properties
-        camRgb.setPreviewSize(416, 416)
-        camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-        camRgb.setInterleaved(False)
-        camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
+        cam_rgb.setPreviewSize(416, 416)
+        cam_rgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        cam_rgb.setInterleaved(False)
+        cam_rgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
 
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
-        monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
-        monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+        mono_left.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
+        mono_left.setBoardSocket(dai.CameraBoardSocket.LEFT)
+        mono_right.setResolution(dai.MonoCameraProperties.SensorResolution.THE_400_P)
+        mono_right.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 
         # setting node configs
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
 
-        spatialDetectionNetwork.setBlobPath(nnBlobPath)
-        spatialDetectionNetwork.setConfidenceThreshold(0.5)
-        spatialDetectionNetwork.input.setBlocking(False)
-        spatialDetectionNetwork.setBoundingBoxScaleFactor(0.5)
-        spatialDetectionNetwork.setDepthLowerThreshold(100)
-        spatialDetectionNetwork.setDepthUpperThreshold(5000)
+        spatial_detection_network.setBlobPath(nn_blob_path)
+        spatial_detection_network.setConfidenceThreshold(0.5)
+        spatial_detection_network.input.setBlocking(False)
+        spatial_detection_network.setBoundingBoxScaleFactor(0.5)
+        spatial_detection_network.setDepthLowerThreshold(100)
+        spatial_detection_network.setDepthUpperThreshold(5000)
 
         # Yolo specific parameters
-        spatialDetectionNetwork.setNumClasses(5)
-        spatialDetectionNetwork.setCoordinateSize(4)
-        spatialDetectionNetwork.setAnchors(np.array([10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319]))
-        spatialDetectionNetwork.setAnchorMasks({ "side26": [0, 1, 2], "side13": [3,4,5] })
-        spatialDetectionNetwork.setIouThreshold(0.5)
+        spatial_detection_network.setNumClasses(5)
+        spatial_detection_network.setCoordinateSize(4)
+        spatial_detection_network.setAnchors(np.array([10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319]))
+        spatial_detection_network.setAnchorMasks({ "side26": [0, 1, 2], "side13": [3,4,5] })
+        spatial_detection_network.setIouThreshold(0.5)
 
         # Linking
-        monoLeft.out.link(stereo.left)
-        monoRight.out.link(stereo.right)
+        mono_left.out.link(stereo.left)
+        mono_right.out.link(stereo.right)
 
-        camRgb.preview.link(spatialDetectionNetwork.input)
-        if syncNN:
-            spatialDetectionNetwork.passthrough.link(xoutRgb.input)
+        cam_rgb.preview.link(spatial_detection_network.input)
+        if sync_nn:
+            spatial_detection_network.passthrough.link(xout_rgb.input)
         else:
-            camRgb.preview.link(xoutRgb.input)
+            cam_rgb.preview.link(xout_rgb.input)
 
-        spatialDetectionNetwork.out.link(xoutNN.input)
-        spatialDetectionNetwork.boundingBoxMapping.link(xoutBoundingBoxDepthMapping.input)
+        spatial_detection_network.out.link(xout_nn.input)
+        spatial_detection_network.boundingBoxMapping.link(xout_bounding_box_depth_mapping.input)
 
-        stereo.depth.link(spatialDetectionNetwork.inputDepth)
-        spatialDetectionNetwork.passthroughDepth.link(xoutDepth.input)
+        stereo.depth.link(spatial_detection_network.inputDepth)
+        spatial_detection_network.passthroughDepth.link(xout_depth.input)
 
         return pipeline
 
