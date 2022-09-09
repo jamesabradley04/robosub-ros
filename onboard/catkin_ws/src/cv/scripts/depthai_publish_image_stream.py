@@ -24,8 +24,11 @@ class DepthAIImageStreamPublisher:
         self.bridge = CvBridge()
         self.pipeline = dai.Pipeline()
         self.build_pipeline()
-        
+
     def build_pipeline(self):
+        """
+        Build the DepthAI.Pipeline, which takes the RGB camera feed and retrieves it using an XLinkOut.
+        """
         camRgb = self.pipeline.create(dai.node.ColorCamera)
         camRgb.setPreviewSize(300, 300)
         camRgb.setInterleaved(False)
@@ -38,6 +41,9 @@ class DepthAIImageStreamPublisher:
 
     # Publish newest image off queue to topic every few seconds
     def run(self):
+        """
+        Get rgb images from the camera and publish them to STREAM_TOPIC.
+        """
         loop_rate = rospy.Rate(1)
 
         # Upload the pipeline to the device
