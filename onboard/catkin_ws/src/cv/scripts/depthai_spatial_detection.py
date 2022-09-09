@@ -17,6 +17,7 @@ from sensor_msgs.msg import Image
 MM_IN_METER = 1000
 SPATIAL_DETECTION_MODELS_FILEPATH = 'package://cv/models/spatial_detection_models.yaml'
 
+# Compute detections on live camera feed and publish spatial coordinates for detected objects
 class DepthAISpatialDetector:
     def __init__(self):
         """
