@@ -17,10 +17,21 @@ footage_extractor = ROSBagFootageExtractor()
 footage_extractor.view_rosbag_info(FOOTAGE_PATH)
 ```
 
-This will provide a summary of the file contents, for example:
+This will provide a summary of the file contents. An example of the output can be seen below.
+This example output was taken from [here](http://wiki.ros.org/rosbag/Commandline#info).
 
 ```
-INSERT EXAMPLE OUTPUT OF ROSBAG INFO
+$ rosbag info foo.bag
+path:        foo.bag
+version:     2.0
+duration:    1.2s
+start:       Jun 17 2010 14:24:58.83 (1276809898.83)
+end:         Jun 17 2010 14:25:00.01 (1276809900.01)
+size:        14.2 KB
+messages:    119
+compression: none [1/1 chunks]
+types:       geometry_msgs/Point [4a842b65f413084dc2b10fb484ea7f17]
+topics:      /points   119 msgs @ 100.0 Hz : geometry_msgs/Point
 ```
 
 To extract the footage, take note of the topic name after viewing the rosbag info and then
