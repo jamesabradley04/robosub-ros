@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+import rospy
 import depthai as dai
 import numpy as np
 import cv2
 import os
+from custom_msgs.srv import EnableModel
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 
 # Test feeding local image into DepthAI camera as a still image feed
 class DepthAIMockImageStream:
