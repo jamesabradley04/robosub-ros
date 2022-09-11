@@ -66,6 +66,6 @@ class DepthAIImageStreamPublisher:
 
 if __name__ == '__main__':
     try:
-        StreamPublisher().run()
+        DepthAIImageStreamPublisher().run()
     except rospy.ROSInterruptException:
         pass

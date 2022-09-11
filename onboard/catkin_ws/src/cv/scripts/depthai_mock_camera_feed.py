@@ -7,6 +7,11 @@ import os
 
 # Test feeding local image into DepthAI camera as a still image feed
 class DepthAIMockImageStream:
+    """
+    Class used to simulate a image publishing depthai camera from a local image.
+    Put image path under self.image, and model path under self.nnPath. Used to
+    test CV model locally without having to use a camera.    
+    """
 
     # Read in the dummy image and other misc. setup work
     def __init__(self):
@@ -31,7 +36,7 @@ class DepthAIMockImageStream:
         # Define neural net architecture
         nn = self.pipeline.create(dai.node.YoloDetectionNetwork)
 
-        # Neural net properties
+        # Neural net / model properties
         nn.setConfidenceThreshold(0.5)
         nn.setBlobPath(self.nnPath)
         nn.setNumInferenceThreads(2)
@@ -42,11 +47,14 @@ class DepthAIMockImageStream:
         nn.setAnchorMasks({"side26": [0, 1, 2], "side13": [3, 4, 5]})
         nn.setIouThreshold(0.5)
 
+        # Create a link between the neural net input and the local image stream output
         xIn.out.link(nn.input)
         nn.out.link(xOut.input)
 
+        # Create a new node in the CV/NN pipeline that links to the local image stream
         feedOut = self.pipeline.create(dai.node.XLinkOut)
 
+        # Feed the image stream to the neural net input node
         feedOut.setStreamName("feed")
         nn.passthrough.link(feedOut.input)
 
@@ -75,4 +83,4 @@ class DepthAIMockImageStream:
             inFeed = qFeed.get()
 
 if __name__ == '__main__':
-    DummyStreamPublisher().run()
+    DepthAIMockImageStream().run()
