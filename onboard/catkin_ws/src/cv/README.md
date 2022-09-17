@@ -41,23 +41,35 @@ container under the directory `/root/.cache/torch/checkpoints/` (do not rename t
 
 ## Your Task
 
-As an onboarding excercise to familiarize ourselves with how CV is situated within the overall ROS software stack, we will be working with ROS in context of our CV module.
+As an onboarding excercise to familiarize ourselves with how CV is situated within the overall ROS software stack, we will be working with ROS in context of our CV module. You will be helping to build a simplified version of our full cv pipeline, from camera input to outputting to task planning.
 
 ### Model Setup
 
-We will begin by adding a method ```init_model``` to our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or Detecto, the Pytorch wrapper we developed a few years ago. Note that your code for the Making Predictions section will be different (although similar conceptually) depending on which implementation you choose.
+We will begin by adding a method ```init_model``` to our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or Detecto, the Pytorch wrapper we developed a few years ago. Note that your code for the Making Predictions section will be different (although similar conceptually) depending on which implementation you choose. For the purpose of this onboarding excercise, we will only worry about one model at a time, although generally, you would train a separate object detection model for each task you need computer vision for (gates, buoys, etc.).
+
+In the method ```init_model```, declare a new instance called ```predictor``` for either the Pytorch or Detecto model which we will load. You might notice that in the constructor, we have a block of code annotated as ```#Load in model configurations as a dictionary``` which loads in a ```.yaml``` file. If you are confused by this, good, because it is kind of confusing. What this block of code does is that it loads a high-level outline of the model (e.g., the name of the model, the output classes of the model) which will then be used by the rest of our script to load in the weights. Note that this is _not_ the actual weights of the trained model itself.
+
+To load the weights file, look at line 23 and see how we loaded the ```model.yaml``` file. Your code should look very similar.
+
+Now let's make a call to our init_model method. In our actual code base, we use a slightly different set up (again, because we will use multiple models), but for our purposes, we will just call it when we enable our model in the ```enable_model``` method.
 
 ### Making Predictions
 
 Now that we have our method to load a model from a saved weights file onboard the robot, we can start making some predictions with it!
 
+However, there is not really a way for us to view what exactly our predictions are. In a sense, our model outputs are "locked in" the ```detection.py``` script as there is no way for us to see what exactly it is outputting from the point of the onboard computer/robot. In order to do so, we will need to first write code to publish our predictions...
+
 ### Publishing 
 
 Now that we are able to load up a CV model and make some predictions with it, let's now connect our CV code to the rest of the ROS software stack by publishing a stream of predictions for each image we receive from our camera stream.
 
-### Intermediate Image Processing
+### Intermediate Processing
 
+Sometimes, even after our model has finished making predictions, we will still need to "tidy up" our outputs a bit before we publish.
 
+One example of this is filtering our predictions by a confidence threshold so that way suboptimal predictions are removed from the publishing feed after our model has made its inferences. This is important as we don't want our feed to task planning to be filled with bad data (that will need to get filtered out on their end anyway), as this would negatively affect the overall performance of the robot.
+
+This section will be a bit more open-ended, and it is intended that way so you can be creative and do a bit of research on your own. What kind of data do we want to keep? What are some algorithms/filters that can help us "enhance" our data? Do a bit of research on ways to improve the quality of the data we feed to task planning. The sky's the limit!
 
 ## Setup
 

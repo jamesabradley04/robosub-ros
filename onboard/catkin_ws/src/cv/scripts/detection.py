@@ -16,22 +16,26 @@ class Detector:
     def __init__(self):
         rospy.init_node('cv', anonymous=True)
 
+        # Input to CV pipeline from camera stream
         self.bridge = CvBridge()
         self.camera = rospy.get_param('~camera')
 
-        # Load in model configurations
+        # Load in model configurations as a dictionary
         with open(rr.get_filename('package://cv/models/models.yaml', use_protocol=False)) as f:
-            self.models = yaml.safe_load(f)
+            self.model_outline = yaml.safe_load(f)
 
         # The topic that the camera publishes its feed to
         self.camera_feed_topic = f'/camera/{self.camera}/image_raw'
 
         # Toggle model service name
         self.enable_service = f'enable_model_{self.camera}'
+        
+        # Load up the model
+        self.model_name = "gate"
 
     # Initialize model predictor and publisher if not already initialized
     def init_model(self, model_name):
-        model = self.models[model_name]
+        model = self.model_outline[model_name]
 
         # Model already initialized; return from method
         if model.get('predictor') is not None:
@@ -49,18 +53,14 @@ class Detector:
 
     # Camera subscriber callback; publishes predictions for each frame
     def detect(self, img_msg):
+
+        # Read the current frame from the camera stream
         image = self.bridge.imgmsg_to_cv2(img_msg, 'rgb8')
 
-        for model_name in self.models:
-            model = self.models[model_name]
+        model = self.model_outline[self.model_name]
 
-            # Generate predictions for each enabled model
-            if model.get('enabled'):
-                # Initialize predictor if not already
-                self.init_model(model_name)
-
-                preds = model['predictor'].predict_top(image)
-                self.publish_predictions(preds, model['publisher'], image.shape)
+        preds = model['predictor'].predict_top(image)
+        self.publish_predictions(preds, model['publisher'], image.shape)
 
     # Publish predictions with the given publisher
     def publish_predictions(self, preds, publisher, shape):
@@ -92,18 +92,18 @@ class Detector:
 
     # Service for toggling specific models on and off
     def enable_model(self, req):
-        if req.model_name in self.models:
-            model = self.models[req.model_name]
-            model['enabled'] = req.enabled
+        model = self.model_outline[self.model_name]
+        model['enabled'] = req.enabled
 
-            # Delete model from memory if setting to disabled
-            if not model.get('enabled'):
-                model['predictor'] = None
-                model['publisher'] = None
+        # Delete model from memory if setting to disabled
+        if not model.get('enabled'):
+            model['predictor'] = None
+            model['publisher'] = None
+        else:
+            # Otherwise, initialize model
+            self.init_model(self.model_name)
 
-            return True
-
-        return False
+        return True
 
     # Initialize node and set up Subscriber to generate and
     # publish predictions at every camera frame
