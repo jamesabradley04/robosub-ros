@@ -15,7 +15,8 @@ class DepthAIMockImageStream:
     This class is used to test a CV neural network model locally without having access to a camera.
     This class takes a still image and transfers it from the host (local computer) to the camera. The
     image feed is then ran through the provided neural network. The goal is to run the neural network inference
-    on this still image feed and publish the predictions. This is currently not implemented.
+    on this still image feed and publish the predictions. This is currently not implemented. Alternatively, this
+    script can be run locally since ROS is not required.
     """
 
     # Read in the dummy image and other misc. setup work
