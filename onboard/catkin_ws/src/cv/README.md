@@ -39,6 +39,24 @@ to manually download the default model file used by the Detecto package. Move th
 container under the directory `/root/.cache/torch/checkpoints/` (do not rename the file). 
 
 
+## Your Task
+
+As an onboarding excercise to familiarize ourselves with how CV is situated within the overall ROS software stack, we will be working with ROS in context of our CV module.
+
+### Model Setup
+
+We will begin by updating our code 
+
+### Making Predictions
+
+### Publishing 
+
+Now that we are able to load up a CV model and make some predictions with it, let's now connect our CV code to the rest of the ROS software stack by publishing a stream of predictions for each image we receive from our camera stream.
+
+### Intermediate Image Processing
+
+
+
 ## Running
 
 To start up a CV node, run the following command:
