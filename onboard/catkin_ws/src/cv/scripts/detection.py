@@ -33,23 +33,20 @@ class Detector:
         # Load up the model
         self.model_name = "gate"
 
+        self.publisher_name = f"{self.model_name}/{self.camera}"
+        self.publisher = rospy.Publisher(self.publisher_name, CVObject, queue_size=10)
+
     # Initialize model predictor and publisher if not already initialized
     def init_model(self, model_name):
+        
         model = self.model_outline[model_name]
 
         # Model already initialized; return from method
-        if model.get('predictor') is not None:
+        if self.predictor is not None:
             return
 
         weights_file = rr.get_filename(f"package://cv/models/{model['weights']}", use_protocol=False)
-
-        predictor = Model.load(weights_file, model['classes'])
-
-        publisher_name = f"{model['topic']}/{self.camera}"
-        publisher = rospy.Publisher(publisher_name, CVObject, queue_size=10)
-
-        model['predictor'] = predictor
-        model['publisher'] = publisher
+        self.predictor = Model.load(weights_file, model['classes'])
 
     # Camera subscriber callback; publishes predictions for each frame
     def detect(self, img_msg):
@@ -57,10 +54,8 @@ class Detector:
         # Read the current frame from the camera stream
         image = self.bridge.imgmsg_to_cv2(img_msg, 'rgb8')
 
-        model = self.model_outline[self.model_name]
-
-        preds = model['predictor'].predict_top(image)
-        self.publish_predictions(preds, model['publisher'], image.shape)
+        preds = self.predictor.predict_top(image)
+        self.publish_predictions(preds, self.publisher, image.shape)
 
     # Publish predictions with the given publisher
     def publish_predictions(self, preds, publisher, shape):
@@ -97,8 +92,8 @@ class Detector:
 
         # Delete model from memory if setting to disabled
         if not model.get('enabled'):
-            model['predictor'] = None
-            model['publisher'] = None
+            self.predictorpredictor = None
+            self.publisher = None
         else:
             # Otherwise, initialize model
             self.init_model(self.model_name)
