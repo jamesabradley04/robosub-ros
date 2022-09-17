@@ -21,6 +21,8 @@ class DepthAIMockImageStream:
     # Read in the dummy image and other misc. setup work
     def __init__(self):
         self.pipeline = dai.Pipeline()
+        self._build_pipeline()
+
         # Dummy still image
         path = os.path.dirname(__file__)
         self.image = cv2.imread(os.path.join(path, IMAGE_RELATIVE_PATH),
@@ -28,8 +30,13 @@ class DepthAIMockImageStream:
         # Get path to nn blob file
         self.nnPath = NN_PATH
 
-    # Publish dummy image to topic every few seconds
-    def run(self):
+    def _build_pipeline(self):
+        """
+        Build the pipeline. Create an input stream to feed the still image and transfer it to the camera. Link that still image
+        stream to the input of the neural network. Create a output link to get the image that was fed through the neural network.
+        In the future, we'd like to create an output link to get the predictions from the neural network rather than the input 
+        to the neural network.
+        """
 
         # Point xIn to still image
         xIn = self.pipeline.create(dai.node.XLinkIn)
@@ -63,6 +70,8 @@ class DepthAIMockImageStream:
         feedOut.setStreamName("feed")
         nn.passthrough.link(feedOut.input)
 
+    # Publish dummy image to topic every few seconds
+    def run(self):
         # Upload the pipeline to the device
         with dai.Device(self.pipeline) as device:
 
