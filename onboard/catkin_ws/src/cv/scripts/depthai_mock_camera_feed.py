@@ -72,6 +72,12 @@ class DepthAIMockImageStream:
 
     # Publish dummy image to topic every few seconds
     def run(self):
+        """
+        Send the still image through to the input queue (qIn) after converting it to the proper format.
+        Then retreive what was fed into the neural network. The input to the neural network should be the same
+        as the still image sent into the input queue.
+        """
+
         # Upload the pipeline to the device
         with dai.Device(self.pipeline) as device:
 
