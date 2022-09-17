@@ -9,14 +9,19 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
 
-# Stream RGB image feed from DepthAI camera to host and publish these images
+
 class DepthAIImageStreamPublisher:
+    """
+    Class to stream the RGB image feed from the depthai camera and publish the raw feed to STREAM_TOPIC.
+    """
 
     CAMERA = 'front'
     STREAM_TOPIC = f'/camera/{CAMERA}/stream_raw'
 
-    # Set up publisher and camera node pipeline
     def __init__(self):
+        """
+        Set up publisher and camera node pipeline.
+        """
         rospy.init_node('stream_images')
         self.stream_publisher = rospy.Publisher(self.STREAM_TOPIC, Image,
                                                queue_size=10)
