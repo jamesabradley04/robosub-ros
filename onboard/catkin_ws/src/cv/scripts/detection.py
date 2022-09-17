@@ -2,13 +2,12 @@
 
 import rospy
 import yaml
-import resource_retriever as rr
-
 from custom_msgs.msg import CVObject
 from custom_msgs.srv import EnableModel
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from detecto.core import Model
+import resource_retriever as rr
 
 
 class Detector:
@@ -21,8 +20,7 @@ class Detector:
         self.camera = rospy.get_param('~camera')
 
         # Load in model configurations
-        with open(rr.get_filename('package://cv/models/models.yaml',
-                                  use_protocol=False)) as f:
+        with open(rr.get_filename('package://cv/models/models.yaml', use_protocol=False)) as f:
             self.models = yaml.safe_load(f)
 
         # The topic that the camera publishes its feed to
@@ -39,23 +37,15 @@ class Detector:
         if model.get('predictor') is not None:
             return
 
-        weights_file = rr.get_filename(
-            f"package://cv/models/{model['weights']}",
-            use_protocol=False)
+        weights_file = rr.get_filename(f"package://cv/models/{model['weights']}", use_protocol=False)
 
         predictor = Model.load(weights_file, model['classes'])
-        publisher_dict = {}
 
-        # Iterate over all classes predicted by a given model,
-        # creating new publisher topics for each class
-        for model_class in model['classes']:
-            publisher_name = f"{model['topic']}/{self.camera}/{model_class}"
-            publisher_dict[model_class] = rospy.Publisher(publisher_name,
-                                                          CVObject,
-                                                          queue_size=10)
+        publisher_name = f"{model['topic']}/{self.camera}"
+        publisher = rospy.Publisher(publisher_name, CVObject, queue_size=10)
 
         model['predictor'] = predictor
-        model['publisher'] = publisher_dict
+        model['publisher'] = publisher
 
     # Camera subscriber callback; publishes predictions for each frame
     def detect(self, img_msg):
@@ -69,21 +59,18 @@ class Detector:
                 # Initialize predictor if not already
                 self.init_model(model_name)
 
-                # Generate model predictions
-                labels, boxes, scores = model['predictor'].predict_top(image)
-
-                # Publish post-nms predictions
-                self.publish_predictions((labels, boxes, scores),
-                                         model['publisher'], image.shape)
+                preds = model['predictor'].predict_top(image)
+                self.publish_predictions(preds, model['publisher'], image.shape)
 
     # Publish predictions with the given publisher
     def publish_predictions(self, preds, publisher, shape):
         labels, boxes, scores = preds
 
-        # If there are no predictions, publish nothing
+        # If there are no predictions, publish 'none' as the object label
         if not labels:
             object_msg = CVObject()
             object_msg.label = 'none'
+            publisher.publish(object_msg)
         else:
             for label, box, score in zip(labels, boxes, scores):
                 object_msg = CVObject()
@@ -101,9 +88,7 @@ class Detector:
 
                 # Safety check that publisher is not None
                 if publisher:
-                    # Publish to the publisher topic corresponding to
-                    # the given returned label
-                    publisher[label].publish(object_msg)
+                    publisher.publish(object_msg)
 
     # Service for toggling specific models on and off
     def enable_model(self, req):

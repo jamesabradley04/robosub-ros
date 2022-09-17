@@ -45,11 +45,11 @@ As an onboarding excercise to familiarize ourselves with how CV is situated with
 
 ### Model Setup
 
-We will begin by adding a method ```init_model``` to our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or Detecto, the Pytorch wrapper we developed a few years ago. Note that your code for the Making Predictions section will be different (although similar conceptually) depending on which you choose.
+We will begin by adding a method ```init_model``` to our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or Detecto, the Pytorch wrapper we developed a few years ago. Note that your code for the Making Predictions section will be different (although similar conceptually) depending on which implementation you choose.
 
 ### Making Predictions
 
-
+Now that we have our method to load a model from a saved weights file onboard the robot, we can start making some predictions with it!
 
 ### Publishing 
 
