@@ -5,12 +5,17 @@ import numpy as np
 import cv2
 import os
 
-# Test feeding local image into DepthAI camera as a still image feed
+IMAGE_RELATIVE_PATH = 'left384.jpg'
+NN_PATH = "blobs/yolo_v4_tiny_openvino_2021.3_6shave-2022-7-21_416_416.blob"
+
 class DepthAIMockImageStream:
     """
-    Class used to simulate a image publishing depthai camera from a local image.
-    Put image path under self.image, and model path under self.nnPath. Used to
-    test CV model locally without having to use a camera.    
+    THIS FILE IS INCOMPLETE.
+
+    This class is used to test a CV neural network model locally without having access to a camera.
+    This class takes a still image and transfers it from the host (local computer) to the camera. The
+    image feed is then ran through the provided neural network. The goal is to run the neural network inference
+    on this still image feed and publish the predictions. This is currently not implemented.
     """
 
     # Read in the dummy image and other misc. setup work
@@ -18,10 +23,10 @@ class DepthAIMockImageStream:
         self.pipeline = dai.Pipeline()
         # Dummy still image
         path = os.path.dirname(__file__)
-        self.image = cv2.imread(os.path.join(path, 'left384.jpg'),
+        self.image = cv2.imread(os.path.join(path, IMAGE_RELATIVE_PATH),
                                 cv2.IMREAD_COLOR)
         # Get path to nn blob file
-        self.nnPath = "blobs/yolo_v4_tiny_openvino_2021.3_6shave-2022-7-21_416_416.blob"
+        self.nnPath = NN_PATH
 
     # Publish dummy image to topic every few seconds
     def run(self):
