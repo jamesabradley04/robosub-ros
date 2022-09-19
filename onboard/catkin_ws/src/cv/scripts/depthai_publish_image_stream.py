@@ -22,7 +22,7 @@ class DepthAIImageStreamPublisher:
         """
         Set up publisher and camera node pipeline.
         """
-        rospy.init_node('stream_images')
+        rospy.init_node('depthai_image_stream')
         self.stream_publisher = rospy.Publisher(self.STREAM_TOPIC, Image,
                                                queue_size=10)
 
