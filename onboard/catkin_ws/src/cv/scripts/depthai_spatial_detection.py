@@ -169,7 +169,7 @@ class DepthAISpatialDetector:
                                                           queue_size=10)
         self.publishers = publisher_dict
 
-    def get_output_queues(self, device):
+    def init_output_queues(self, device):
         """
         Assigns output queues from the pipeline to dictionary of queues.
         :param device: DepthAI.Device object for the connected device. See https://docs.luxonis.com/projects/api/en/latest/components/device/
@@ -259,7 +259,7 @@ class DepthAISpatialDetector:
         self.init_publishers(req.model_name)
 
         with dai.Device(self.pipeline) as device:
-            self.get_output_queues(device)
+            self.init_output_queues(device)
 
             loop_rate = rospy.Rate(1)
             while not rospy.is_shutdown():
