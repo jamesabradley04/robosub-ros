@@ -15,17 +15,17 @@ from sensor_msgs.msg import Image
 
 
 MM_IN_METER = 1000
-SPATIAL_DETECTION_MODELS_FILEPATH = 'package://cv/models/spatial_detection_models.yaml'
+DEPTHAI_OBJECT_DETECTION_MODELS_FILEPATH = 'package://cv/models/depthai_models.yaml'
 
 # Compute detections on live camera feed and publish spatial coordinates for detected objects
 class DepthAISpatialDetector:
     def __init__(self):
         """
-        Initializes the ROS node and service. Loads the yaml file at cv/models/spatial_detection_models.yaml
+        Initializes the ROS node and service. Loads the yaml file at cv/models/depthai_models.yaml
         """
         rospy.init_node('depthai_spatial_detection', anonymous=True)
 
-        with open(rr.get_filename(SPATIAL_DETECTION_MODELS_FILEPATH,
+        with open(rr.get_filename(DEPTHAI_OBJECT_DETECTION_MODELS_FILEPATH,
                                   use_protocol=False)) as f:
             self.models = yaml.safe_load(f)
 
@@ -132,13 +132,13 @@ class DepthAISpatialDetector:
         """
         Creates and assigns the pipeline and sets the current model name.
 
-        :param model_name: Name of the model. The model name should match a key in cv/models/spatial_detection_models.yaml.
-        For example, if spatial_detection_models.yaml is:
+        :param model_name: Name of the model. The model name should match a key in cv/models/depthai_models.yaml.
+        For example, if depthai_models.yaml is:
 
         gate:
-            classes: [start_gate, start_tick]
-            topic: /cv
-            weights: gate-tick-15-epochs.pth
+            classes: ['gate', 'gate_side', 'gate_tick', 'gate_top', 'start_gate']
+            topic: cv/
+            weights: yolo_v4_tiny_openvino_2021.3_6shave-2022-7-21_416_416.blob
 
         Then model name is gate.
         """
@@ -250,7 +250,7 @@ class DepthAISpatialDetector:
         """
         Runs the model on the connected device.
         :param req: Request from
-        :return: False if the model is not in cv/models/spatial_detection_models.yaml. Otherwise, the model will be run on the device.
+        :return: False if the model is not in cv/models/depthai_models.yaml. Otherwise, the model will be run on the device.
         """
         if not req.model_name in self.models:
             return False
