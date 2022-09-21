@@ -30,7 +30,7 @@ class Detector:
         # Toggle model service name
         self.enable_service = f'enable_model_{self.camera}'
         
-        # LOAD MODEL AND CREATE PUBLISHER
+        # SET USEFUL MODEL PARAMS AND CREATE PUBLISHER
 
     # Initialize model predictor if not already initialized
     def init_model(self, model_name):
