@@ -13,9 +13,9 @@ As an onboarding excercise to familiarize ourselves with how CV is situated with
 
 ### Model Setup
 
-We will begin by completing the ```init_model``` method in our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or [Detecto](https://github.com/alankbi/detecto), the Pytorch wrapper we developed a few years ago. We suggest that you use detecto, as that is the framework we use on our current pipeline. Although if you are interested in a challenge, implementing this with Pytorch would be an excellent excercise. Note that your code for the "Making Predictions" and "Publishing" sections will be different (although similar conceptually) depending on which implementation you choose. For the purpose of this onboarding excercise, we will only worry about one model at a time, although generally, you would train a separate object detection model for each task you need computer vision for (gates, buoys, etc.).
+We will begin by completing the ```init_model``` method in our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or [Detecto](https://github.com/alankbi/detecto), the Pytorch wrapper we developed a few years ago. We suggest that you use Detecto, as that is the framework we use on our current pipeline, though if you are interested in a challenge, implementing this with Pytorch would be an excellent excercise. Note that your code for the "Making Predictions" and "Publishing" sections will be different (although similar conceptually) depending on which implementation you choose. For the purpose of this onboarding excercise, we will only worry about one model at a time, although generally, you would train a separate object detection model for each task you need computer vision for (gates, buoys, etc.).
 
-In the method ```init_model```, declare a new instance called ```predictor``` for either the Pytorch or Detecto model which we will load. You might notice that in the constructor, we have a block of code annotated as ```# Load in model configurations as a dictionary``` which loads in a ```.yaml``` file. If you are confused by this, good, because it is kind of confusing. What this block of code does is that it loads a high-level outline of the model (e.g., the name of the model, the output classes of the model) which will then be used by the rest of our script to load in the weights. Note that this is _not_ the actual weights of the trained model itself.
+In the method ```init_model```, declare a new instance variable called ```predictor``` for either the Pytorch or Detecto model which we will load. You might notice that in the constructor, we have a block of code annotated as ```# Load in model configurations as a dictionary``` which loads in a ```.yaml``` file. If you are confused by this, good, because it is kind of confusing. What this block of code does is that it loads a high-level outline of the model (e.g., the name of the model, the output classes of the model) which will then be used by the rest of our script to load in the weights. Note that this is _not_ the actual weights of the trained model itself.
 
 The ```.yaml``` dictionary is loaded in a variable called ```model_outline```, which you should reference for information like what classes we predict in the model initialization. Since we are only working with one model, for now we can just hardcode an instance variable called ```model_name```. Refer to the actual ```.yaml``` file to see what value ```model_name``` should be.
 
@@ -27,9 +27,9 @@ Now let's make a call to our init_model method. In our actual code base, we use 
 
 Now that we have our method to load a model from a saved weights file onboard the robot, we can start making some predictions with it!
 
-In the ```detect``` method call the model which you have initialized in the ```init_model``` method to make a prediction based on the input image. Again, you may need to look up some documentation.
+In the ```detect``` method call the model which you have initialized in the ```init_model``` method to make a prediction based on the input image. Note that in the publishing code we provided, we assume that you only make one prediction per image (think about which method to use!). Again, you may need to look up some documentation. If you are using Detecto, check out the source code to the package we linked above to see all of the availible methods in the ```Model``` class.
 
-Note that ```detect``` is actually a callback which our ROS Subscriber automatically calls everytime we read a new image from the camera feed. See the following code in ```run```:
+Note that ```detect``` is actually a callback function which our ROS Subscriber automatically calls everytime we read a new image from the camera feed. See the following code in ```run```:
 ```Python
 rospy.Subscriber(self.camera_feed_topic, Image, self.detect)
 ```
@@ -53,7 +53,7 @@ Complete this line with the appropriate variables.
 
 Note that you will also need to define what type (aka class name) of object we are publishing. For this, look at what we are importing to see if there is anything we can use.
 
-Now that you have created a publisher, we will need to complete the ```publish_predictions``` method. We've provided the code to extract the relevant information to publish from a (detecto, though outputs from Pytorch would be similar) network; look at what's there and figure out when to call the publisher and with what data.
+Now that you have created a publisher, we will need to complete the ```publish_predictions``` method. We've provided the code to extract the relevant information to publish from a (Detecto, though outputs from Pytorch would be similar) network; look at what's there and figure out when to call the publisher and with what data.
 
 You are almost done. The last thing we need to do (presuming that our code has no bugs so far) is to make a call to our publishing method. Where would it make the most sense to call ```publish_predictions```?
 
