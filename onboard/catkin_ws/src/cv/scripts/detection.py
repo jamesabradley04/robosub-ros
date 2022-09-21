@@ -35,8 +35,6 @@ class Detector:
     # Initialize model predictor if not already initialized
     def init_model(self, model_name):
 
-        # GET MODEL_NAME PARAMETER (think about where we read in that info before)
-
         # Model already initialized; return from method
         if self.predictor is not None:
             return
@@ -49,7 +47,11 @@ class Detector:
         # Read the current frame from the camera stream
         image = self.bridge.imgmsg_to_cv2(img_msg, 'rgb8')
 
+        # IMPORTANT! CHECK IF MODEL IS INITIALIZED
+
         # CALL PREDICTOR TO MAKE A PREDICTION ON IMAGE
+
+        # CALL PUBLISHER AFTER PREDICTION
 
     # Publish predictions with the given publisher
     def publish_predictions(self, preds, publisher, shape):
