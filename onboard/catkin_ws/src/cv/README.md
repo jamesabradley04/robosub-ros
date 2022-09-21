@@ -17,6 +17,8 @@ We will begin by adding a method ```init_model``` to our ```detection.py``` scri
 
 In the method ```init_model```, declare a new instance called ```predictor``` for either the Pytorch or Detecto model which we will load. You might notice that in the constructor, we have a block of code annotated as ```# Load in model configurations as a dictionary``` which loads in a ```.yaml``` file. If you are confused by this, good, because it is kind of confusing. What this block of code does is that it loads a high-level outline of the model (e.g., the name of the model, the output classes of the model) which will then be used by the rest of our script to load in the weights. Note that this is _not_ the actual weights of the trained model itself.
 
+The ```.yaml``` dictionary is loaded in a variable called ```model_outline```, which you should reference for information like what classes we predict in the model initialization. Since we are only working with one model only, we can just hard code an instance variable called ```model_name```. Refer to the actual ```.yaml``` file to see what value the name should be.
+
 To load the weights file, look at line 23 and see how we loaded the ```models.yaml``` file. Your code should look similar. After reading in the weights file into a file, let's make a call to our ML package's (Pytorch or Detecto) model loader method with the weights file. You may need to look up the official documentation in order to find the write method to call.
 
 Now let's make a call to our init_model method. In our actual code base, we use a slightly different set up (again, because we will use multiple models), but for our purposes, we will just call it when we enable our model in the ```enable_model``` method.
@@ -25,7 +27,9 @@ Now let's make a call to our init_model method. In our actual code base, we use 
 
 Now that we have our method to load a model from a saved weights file onboard the robot, we can start making some predictions with it!
 
-In the ```detect``` method call the model which you have initialized in the ```init_model``` method to make a prediction based on the input image. Again, you may need to look up some documentation. Note that ```detect``` is actually a callback which our ROS Subscriber automatically calls everytime we read a new image from the camera feed. See the following code in ```run```:
+In the ```detect``` method call the model which you have initialized in the ```init_model``` method to make a prediction based on the input image. Again, you may need to look up some documentation.
+
+Note that ```detect``` is actually a callback which our ROS Subscriber automatically calls everytime we read a new image from the camera feed. See the following code in ```run```:
 ```Python
 rospy.Subscriber(self.camera_feed_topic, Image, self.detect)
 ```

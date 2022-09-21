@@ -64,6 +64,8 @@ class Detector:
             # PUBLISH THE BLANK OBJECT_MSG
 
         else:
+            # Unpack model prediction before publishing (detecto)
+            # IF YOU ARE USING PYTORCH NOT DETECTO DELETE THIS!
             for label, box, score in zip(labels, boxes, scores):
                 object_msg = CVObject()
 
