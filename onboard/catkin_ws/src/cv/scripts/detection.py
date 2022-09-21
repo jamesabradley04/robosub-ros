@@ -30,23 +30,18 @@ class Detector:
         # Toggle model service name
         self.enable_service = f'enable_model_{self.camera}'
         
-        # Load up the model
-        self.model_name = "gate"
+        # LOAD MODEL AND CREATE PUBLISHER
 
-        self.publisher_name = f"{self.model_name}/{self.camera}"
-        self.publisher = rospy.Publisher(self.publisher_name, CVObject, queue_size=10)
-
-    # Initialize model predictor and publisher if not already initialized
+    # Initialize model predictor if not already initialized
     def init_model(self, model_name):
-        
-        model = self.model_outline[model_name]
+
+        # GET MODEL_NAME PARAMETER (think about where we read in that info before)
 
         # Model already initialized; return from method
         if self.predictor is not None:
             return
 
-        weights_file = rr.get_filename(f"package://cv/models/{model['weights']}", use_protocol=False)
-        self.predictor = Model.load(weights_file, model['classes'])
+        # DECLARE MODEL HERE
 
     # Camera subscriber callback; publishes predictions for each frame
     def detect(self, img_msg):
@@ -54,8 +49,7 @@ class Detector:
         # Read the current frame from the camera stream
         image = self.bridge.imgmsg_to_cv2(img_msg, 'rgb8')
 
-        preds = self.predictor.predict_top(image)
-        self.publish_predictions(preds, self.publisher, image.shape)
+        # CALL PREDICTOR TO MAKE A PREDICTION ON IMAGE
 
     # Publish predictions with the given publisher
     def publish_predictions(self, preds, publisher, shape):
@@ -63,9 +57,12 @@ class Detector:
 
         # If there are no predictions, publish 'none' as the object label
         if not labels:
+
             object_msg = CVObject()
             object_msg.label = 'none'
-            publisher.publish(object_msg)
+            
+            # PUBLISH THE BLANK OBJECT_MSG
+
         else:
             for label, box, score in zip(labels, boxes, scores):
                 object_msg = CVObject()
@@ -81,22 +78,19 @@ class Detector:
                 object_msg.height = shape[0]
                 object_msg.width = shape[1]
 
-                # Safety check that publisher is not None
-                if publisher:
-                    publisher.publish(object_msg)
+                # FIND PUBLISHER; IF FOUND, PUBLISH
 
     # Service for toggling specific models on and off
     def enable_model(self, req):
+
+        # Retrieve model from model_outline yaml dict
         model = self.model_outline[self.model_name]
         model['enabled'] = req.enabled
 
-        # Delete model from memory if setting to disabled
-        if not model.get('enabled'):
-            self.predictorpredictor = None
-            self.publisher = None
-        else:
-            # Otherwise, initialize model
-            self.init_model(self.model_name)
+        
+        # WRITE CODE TO SEE IF MODEL IS ENABLED
+        # IF NO, SET PREDICTOR AND PUBLISHER TO NONE
+        # IF YES, INITIALIZE MODEL HERE
 
         return True
 
