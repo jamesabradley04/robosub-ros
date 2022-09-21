@@ -13,7 +13,7 @@ As an onboarding excercise to familiarize ourselves with how CV is situated with
 
 ### Model Setup
 
-We will begin by adding a method ```init_model``` to our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or [Detecto](https://github.com/alankbi/detecto), the Pytorch wrapper we developed a few years ago. We suggest that you use detectco, as that is the current framework we use on the pipeline, although if you are interested in a challenge, implementing this with Pytorch would be an excellent excercise. Note that your code for the Making Predictions section will be different (although similar conceptually) depending on which implementation you choose. For the purpose of this onboarding excercise, we will only worry about one model at a time, although generally, you would train a separate object detection model for each task you need computer vision for (gates, buoys, etc.).
+We will begin by completing the ```init_model``` method in our ```detection.py``` script which will take in a ```model_mame``` and load the correct model from its weights file. You may choose to do this in either Pytorch or [Detecto](https://github.com/alankbi/detecto), the Pytorch wrapper we developed a few years ago. We suggest that you use detecto, as that is the framework we use on our current pipeline. Although if you are interested in a challenge, implementing this with Pytorch would be an excellent excercise. Note that your code for the "Making Predictions" and "Publishing" sections will be different (although similar conceptually) depending on which implementation you choose. For the purpose of this onboarding excercise, we will only worry about one model at a time, although generally, you would train a separate object detection model for each task you need computer vision for (gates, buoys, etc.).
 
 In the method ```init_model```, declare a new instance called ```predictor``` for either the Pytorch or Detecto model which we will load. You might notice that in the constructor, we have a block of code annotated as ```# Load in model configurations as a dictionary``` which loads in a ```.yaml``` file. If you are confused by this, good, because it is kind of confusing. What this block of code does is that it loads a high-level outline of the model (e.g., the name of the model, the output classes of the model) which will then be used by the rest of our script to load in the weights. Note that this is _not_ the actual weights of the trained model itself.
 
@@ -56,6 +56,10 @@ Note that you will also need to define what type (aka class name) of object we a
 Now that you have created a publisher, we will need to complete the ```publish_predictions``` method. We've provided the code to extract the relevant information to publish from a (detecto, though outputs from Pytorch would be similar) network; look at what's there and figure out when to call the publisher and with what data.
 
 You are almost done. The last thing we need to do (presuming that our code has no bugs so far) is to make a call to our publishing method. Where would it make the most sense to call ```publish_predictions```?
+
+### Testing
+
+Now that our code is hopefully complete, we can test locally to see if our model can make a prediction on an image. We've provided you with a script called ```test_images.py``` which allows you to simulate a camera stream with a local image (look at source code to see what the image should be named and where it should be saved). Look at the section below on Running the code with ROS commands as well as the section labeled Examples. You will need to make some changes to the commands (hint: change model name .etc), but the process in terms of the sequence of commands to run should be the same. Don't hesitate to ask us if you get stuck!
 
 ### Intermediate Processing (Bonus)
 
@@ -165,3 +169,11 @@ The following are the folders and files in the CV package:
 `package.xml`: A xml file stating the basic information about the CV package
 
 The CV package also has dependencies in the `core/catkin_ws/src/custom_msgs` folder.
+
+## Examples
+To simulate camera feed and then run a model on the feed from the left camera. We'll assume the model we want to run is called 'buoy':
+* In one terminal, run `roslaunch cv test_images.launch` to start the script meant to simulate the raw camera feed
+* In a new terminal, run `roslaunch cv cv_left.launch` to start the cv node
+* In another new terminal, run `rosservice list` and should see the `enable_model_left` service be listed in the terminal
+* In the same terminal, run `rosservice call enable_model_left buoy true` to enable the buoy model on the feed coming from the left camera. This model should now be publishing predictions
+* To verify that the predictions are being published, you can run `rostopic list`, and you should see both `/camera/left/image_raw` and `/cv/buoy/left` be listed. Then you can run `rostopic echo /cv/buoy/left` and the model predictions should be printed to the terminal
