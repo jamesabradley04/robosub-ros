@@ -59,7 +59,7 @@ You are almost done. The last thing we need to do (presuming that our code has n
 
 ### Testing
 
-Now that our code is hopefully complete, we can test locally to see if our model can make a prediction on an image. We've provided you with a script called ```test_images.py``` which allows you to simulate a camera stream with a local image (look at source code to see what the image should be named and where it should be saved). Look at the section below on Running the code with ROS commands as well as the section labeled Examples. You will need to make some changes to the commands (hint: change model name .etc), but the process in terms of the sequence of commands to run should be the same. Don't hesitate to ask us if you get stuck!
+Now that our code is hopefully complete, we can test locally to see if our model can make a prediction on an image. We've provided you with a script called ```test_images.py``` which allows you to simulate a camera stream with a local image (look at the source code for ```test_images.py``` to see/edit what the image should be named and where it should be saved). Read the section below on Running the code with ROS commands as well as the section labeled Examples. You will need to make some changes to the commands (hint: change model name .etc), but the process in terms of the sequence of commands to run should be the same. Don't hesitate to ask us if you get stuck!
 
 ### Intermediate Processing (Bonus)
 
